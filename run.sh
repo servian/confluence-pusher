@@ -12,7 +12,7 @@ for i in $(find . -name "*.$MARKDOWN_EXTENSION");
 done
 
 # Convert links to svg files to svg data
-python svg2html.py
+python3 svg2html.py
 
 # Cleanup:
 # now rename html/*tmp to html
