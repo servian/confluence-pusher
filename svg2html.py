@@ -1,5 +1,6 @@
 #
-#   A simple convertor of inline
+#   A simple convertor of inline SVG references to embedded SVG data;
+#   Also converts html to confluence format;
 #
 import os
 import html2jira
