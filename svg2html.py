@@ -2,6 +2,7 @@
 #   A simple convertor of inline
 #
 import os
+import html2jira
 
 HTML_FOLDER = "./html"
 HTML_EXTENSION = '.html'
