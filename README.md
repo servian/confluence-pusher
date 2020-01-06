@@ -28,7 +28,7 @@ Change your confluence credentials in credentials.sh:
 
 2.1. To get your wiki link and space name:
 
-![Confluence link example](img/configuration.svg)
+![Confluence link example](/img/configuration.svg)
 
     CONFLUENCE_SPACE = "xx";
     CONFLUENCE_WIKI_LINK = "https://vibrato.atlassian.net/wiki";
