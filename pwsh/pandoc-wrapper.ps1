@@ -16,6 +16,8 @@ if($ShowProgress){$ProgressPreference = 'Continue'}
 
 # $pandocExePath = Join-Path (Join-Path $pandocDestinationPath "pandoc-$panDocVersion") "pandoc.exe"
 $pandocExecPath = "figure this out after calling github-release-install.ps1"
+
+## DOWNLOAD AND INSTALL LATEST CONFLUENCE LUA: https://github.com/jpbarrette/pandoc-confluence-writer/blob/master/confluence.lua
  
 # Find the reference folder path w.r.t the script
 $ReferenceDocset = Join-Path $PSScriptRoot 'reference'
