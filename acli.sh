@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# Settings for atlassian-cli
+
 # Remember the directory path to this script file
 directory=`dirname "$0"`
 
