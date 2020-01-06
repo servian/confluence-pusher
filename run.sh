@@ -3,6 +3,9 @@
 # Import credentials as env variables
 source .env
 
+# Clean html/ folder
+rm -rf html/*
+
 # Convert markdown to html
 for i in $(find . -name $MARKDOWN_EXTENSION);
   do mkdir -p html/$(dirname ${i:2}); pandoc $i -f markdown -s -o html/${i:2}.$HTML_EXTENSION;
