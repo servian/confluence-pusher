@@ -3,6 +3,7 @@
 #   Also converts html to confluence format;
 #
 import os
+import html
 import html2jira
 
 HTML_FOLDER = "./html"
@@ -65,7 +66,7 @@ def scan_line_from_html_file(line_from_html_file, temp_file):
 
                                 line_from_html_file = new_line_with_embedded_svg(
                                     drop_the_first_line, svg_image, line_from_html_file)
-    temp_file.write(html2jira.html2jira(line_from_html_file))
+    temp_file.write(html2jira.html2jira(line_from_html_file).rstrip(" "))
 
 
 def drop_the_first_line(svg_image):
