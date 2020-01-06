@@ -29,11 +29,11 @@ Change your confluence credentials in credentials.sh:
 
 2.3. Follow [this link](https://id.atlassian.com/manage/api-tokens) to configure your API token as described [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
 
-    CONFLUENCE_TOKEN =  "Cc7kbbR4VwyNXDh11K1PAEAA"
+    CONFLUENCE_TOKEN =  "XXX"
 
 2.4. Parent page ID for your wiki or documentation. Read [this](https://confluence.atlassian.com/doc/create-and-edit-pages-139476.html) to learn how to create it.
 
-    CONFLUENCE_PARENT = "684917000"
+    CONFLUENCE_PARENT = "00000000"
 
 # 3.Run
 
