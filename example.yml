@@ -1,0 +1,31 @@
+- host: <your_cloud_host>
+- username: <your_username>
+- api_key: <key>
+
+- space: <my_space_key>
+
+- page: RootA
+  content: "This is my content"
+  children:
+    - page: Child A1
+      children:
+        - page: Child A11
+        - page: Child A12
+        - page: Child A13
+          children:
+            - page: Child A111
+            - page: Child A112
+            - page: Child A113
+              children:
+                - page: Child A1111
+                - page: Child A1112
+                - page: Child A1113
+
+    - page: Child A2
+    - page: Child A3
+
+- page: RootB
+  children:
+    - page: Child B1
+    - page: Child B2
+    - page: Child B3

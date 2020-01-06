@@ -1,8 +1,18 @@
 # confluence-pusher
 
-A tool to convert documentation from variety of formats and upload content to Confluence.
+A tool to convert documentation from markdown to html and upload it to Confluence. What it does:
 
-# 1.Installation
+    *.md -> *.html -> embed svg into html -> upload to Confluence
+
+You can also use alternative tool to create content structure in Confluence with YAML files:
+
+    https://github.com/jsinglet/confluence-command-line
+
+Example:
+
+    ccl create-skeleton example.yml
+
+## 1.Installation
 
 1.1. Install [Brew](https://brew.sh/):
 
@@ -12,7 +22,7 @@ A tool to convert documentation from variety of formats and upload content to Co
 
     sh setup.sh
 
-# 2.Configuration
+## 2.Configuration
 
 Change your confluence credentials in credentials.sh:
 
@@ -35,7 +45,7 @@ Change your confluence credentials in credentials.sh:
 
     CONFLUENCE_PARENT = "00000000"
 
-# 3.Run
+## 3.Run
 
 Once you configured your credentials in credentials.sh simply run:
 
