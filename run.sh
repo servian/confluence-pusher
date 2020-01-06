@@ -17,6 +17,7 @@ for i in $(find html -name "*.tmp");
   do mv $i ${i%????};
 done
 
+# Download https://bobswift.atlassian.net/wiki/spaces/ACLI/pages/16875586/Downloads
 # Upload html/* to confluence
 cd html
 for i in $(find . -name $HTML_EXTENSION);
