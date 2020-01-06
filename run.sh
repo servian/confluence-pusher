@@ -4,7 +4,7 @@
 source .env
 
 # Clean html/ folder
-rm -rf html/*
+#rm -rf html/*
 
 # Convert markdown to html
 for i in $(find . -name "*.$MARKDOWN_EXTENSION");
