@@ -5,7 +5,7 @@ source .env
 
 # Convert markdown to html
 for i in $(find . -name $MARKDOWN_EXTENSION);
-  do mkdir -p html/$(dirname ${i:2}); pandoc $i -f markdown -s -o html/${i:2}.html;
+  do mkdir -p html/$(dirname ${i:2}); pandoc $i -f markdown -s -o html/${i:2}.$HTML_EXTENSION;
 done
 
 # Convert links to svg files to svg data
@@ -20,6 +20,6 @@ done
 # Download https://bobswift.atlassian.net/wiki/spaces/ACLI/pages/16875586/Downloads
 # Upload html/* to confluence
 cd html
-for i in $(find . -name $HTML_EXTENSION);
+for i in $(find . -name "$HTML_EXTENSION");
   do ../acli.sh confluencecloud -a storePage --file $i --space $CONFLUENCE_SPACE --title ${i:2} -s $CONFLUENCE_WIKI_LINK --user $CONFLUENCE_USER --token $CONFLUENCE_TOKEN --replace --parent $CONFLUENCE_PARENT;
 done
