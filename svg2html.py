@@ -1,3 +1,6 @@
+#
+#   A simple convertor of inline
+#
 import os
 
 HTML_FOLDER = "./html"

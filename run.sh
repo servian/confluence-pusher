@@ -5,7 +5,7 @@
 . credentials.sh
 
 # Convert markdown to html
-for i in $(find . -name $HTML_EXTENSION);
+for i in $(find . -name $MARKDOWN_EXTENSION);
 do mkdir -p html/$(dirname ${i:2});
     pandoc $i -f markdown -s -o html/${i:2}.html;
 done

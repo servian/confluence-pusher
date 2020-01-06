@@ -1,3 +1,4 @@
+MARKDOWN_EXTENSION = "*.md";
 HTML_EXTENSION = "*.html";
 CONFLUENCE_SPACE = "xx";
 CONFLUENCE_WIKI_LINK = "https://vibrato.atlassian.net/wiki";
