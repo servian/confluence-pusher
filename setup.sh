@@ -1,2 +1,5 @@
 #!/bin/sh
-brew install pandoc python3 atlassian-cli;
+brew update;
+brew doctor;
+brew cleanup;
+brew install gcc pandoc python3 atlassian-cli;
