@@ -2,7 +2,8 @@
 brew update;
 brew doctor;
 brew cleanup;
-brew install gcc pandoc python3 atlassian-cli;
+brew install gcc python3 atlassian-cli;
+brew install pandoc pandoc-citeproc;
 pip install confluence-command-line;
-pip install HTMLParser;
-pip install feedparser;
+pip install pypandoc;
+pip install atlassian-python-api;
