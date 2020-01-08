@@ -1,6 +1,7 @@
 
 import os
 import sys
+import re
 from atlassian import Confluence
 from progress.bar import Bar
 
@@ -19,8 +20,11 @@ TMP_FILE = "_filetemp.tmp"
 IMG_TAG_START = '<ac:image><ri:attachment ri:filename="'
 IMG_TAG_END = '" /></ac:image>'
 
-HTML_STYLE_BEGIN = '<style>'
-HTML_STYLE_END = '</style>'
+# HTML_STYLE_BEGIN = '<style>'
+# HTML_STYLE_END = '</style>'
+
+HTML_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
+HTML_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
 
 MD_HEADER_START = '# '
 
@@ -47,25 +51,27 @@ confluence_parent_id_index = ''
 def main():
 
     try:
-        bar = Bar('Processing', max=6)
         filesystem_cleanup()
         update_confluence_filter()
-        bar.next()
         # Think twice before using this as it will delete the main document tree and all the contents!
         delete_root_page()
-        bar.next()
         create_root_page()
-        bar.next()
         convert_files_and_create_confluence_document_tree()
-        bar.next()
         publish_content_to_confluence()
-        bar.next()
         filesystem_cleanup()
-        bar.next()
     except:
         filesystem_cleanup()
         print("Unexpected error:", sys.exc_info()[0])
         raise
+
+
+def filesystem_cleanup():
+    os.system('rm *.tmp')
+    os.system(('rm **/*' + CONFLUENCE_EXTENSION))
+
+
+def update_confluence_filter():
+    os.system(UPDATE_CONFLUENCE_FILTER)
 
 
 def create_root_page():
@@ -150,9 +156,10 @@ def create_confluence_document_tree(md_files_list):
                     # filesystem_path_items[path_index - 1])
                 if path_index > 0:
                     if md_file.endswith(CONFLUENCE_SECTION_CONTENT_FILE) is not True:
-                        # status = update_empty_confluence_page(title, parent_id)
-                        status = update_empty_confluence_page(
-                            filesystem_item, parent_id)
+                        status = update_empty_confluence_page(title, parent_id)
+                        # if confluence.page_exists(CONFLUENCE_SPACE, filesystem_item) is not True:
+                        #     status = update_empty_confluence_page(
+                        #         filesystem_item, parent_id)
                         page_id = status['id']
                     else:
                         page_id = parent_id
@@ -161,10 +168,6 @@ def create_confluence_document_tree(md_files_list):
                 path_index += 1
 
     confluence_parent_id_index = confluence_index
-
-
-def update_confluence_filter():
-    os.system(UPDATE_CONFLUENCE_FILTER)
 
 
 def convert_md_files():
@@ -176,8 +179,8 @@ def convert_md_files():
         os.system(PANDOC_OS_COMMAND)
 
 
-def upload_file_as_an_attachment(svg_image, svg_file_name, title, page_id):
-    svg_file = open(svg_image)
+def upload_file_as_an_attachment(svg_image_path, svg_file_name, title, page_id):
+    svg_file = open(svg_image_path)
     status = confluence.attach_content(
         svg_file.read(),
         name=(svg_file_name),
@@ -190,9 +193,19 @@ def upload_file_as_an_attachment(svg_image, svg_file_name, title, page_id):
 
 
 def find_svg_image_link(content):
-    begin = content.find(IMG_TAG_START)
-    end = content.find(IMG_TAG_END)
-    path = content[begin:end].replace(IMG_TAG_START, "")
+    path = []
+    img_tag_begin_positions = [(entry.end()) for entry in list(
+        re.finditer(IMG_TAG_START, content))]
+    img_tag_end_positions = [(entry.start()) for entry in list(
+        re.finditer(IMG_TAG_END, content))]
+    index = 0
+    for begin in img_tag_begin_positions:
+        end = img_tag_end_positions[index]
+        img_path = content[begin:end].replace(
+            IMG_TAG_START, "")
+        if img_path:
+            path.append(img_path)
+        index += 1
     return(path)
 
 
@@ -201,7 +214,7 @@ def find_svg_image_filename(link):
     return(link[begin:])
 
 
-def cleanup_html_style(content):
+def cleanup_confluence_html(content):
     begin = content.find(HTML_STYLE_BEGIN)
     end = content.find(HTML_STYLE_END)
     content = content.replace((content[begin:end] + HTML_STYLE_END), '')
@@ -233,24 +246,29 @@ def publish_content_to_confluence():
         cfl_file_path = file_record[0] + CONFLUENCE_EXTENSION
 
         with open(cfl_file_path) as fp:
-            cfl_content = fp.read()
-
-            # title = cfl_file_path.replace(MD_EXTENSION, '').replace(
-            #     CONFLUENCE_EXTENSION, '')
+            confluence_file_content = fp.read()
 
             # title = find_confluence_title(cfl_content)
             title = file_record[2]
 
-            svg_image = find_svg_image_link(cfl_content)
-            if svg_image:
-                svg_file_name = find_svg_image_filename(svg_image)
-                svg_image_path = MD_FOLDER + "/" + \
-                    str(svg_image).replace("./../.", "").replace("./.", "")
-                cfl_content = cfl_content.replace(svg_image, svg_file_name)
-                upload_file_as_an_attachment(
-                    svg_image_path, svg_file_name, title, file_record[4])
+            svg_images = find_svg_image_link(confluence_file_content)
 
-            cfl_content = cleanup_html_style(cfl_content)
+            for svg_image_path in svg_images:
+                if svg_image_path:
+                    svg_file_name = find_svg_image_filename(svg_image_path)
+                    confluence_file_content = confluence_file_content.replace(
+                        svg_image_path, svg_file_name)
+                    if svg_image_path.startswith('../../'):
+                        svg_image_path = svg_image_path.replace(
+                            '../..', MD_FOLDER)
+                    else:
+                        svg_image_path = MD_FOLDER + "/" + \
+                            svg_image_path.replace('../', '')
+                    upload_file_as_an_attachment(
+                        svg_image_path, svg_file_name, title, file_record[4])
+
+            confluence_file_content = cleanup_confluence_html(
+                confluence_file_content)
 
             if file_record[0].endswith(CONFLUENCE_SECTION_CONTENT_FILE):
                 page_id = file_record[3]
@@ -260,18 +278,13 @@ def publish_content_to_confluence():
             confluence.update_page(
                 page_id=page_id,
                 title=file_record[2],
-                body=cfl_content,
+                body=confluence_file_content,
                 parent_id=file_record[3],
                 type='page',
                 representation='storage',
                 minor_edit=False)
 
         path_index += 1
-
-
-def filesystem_cleanup():
-    os.system('rm *.tmp')
-    os.system(('rm **/*' + CONFLUENCE_EXTENSION))
 
 
 main()
