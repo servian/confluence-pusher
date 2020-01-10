@@ -14,7 +14,7 @@ CONFLUENCE_FILTER_URL = \
 UPDATE_CONFLUENCE_FILTER = "wget " + \
     CONFLUENCE_FILTER_URL + " -O " + CONFLUENCE_FILTER_NAME
 
-CONFLUENCE_EXTENSION = '.cf'
+CONFLUENCE_FILE_EXTENSION = '.cf'
 TMP_FILE = "_filetemp.tmp"
 
 MD_EXTENSION = '.md'
@@ -28,17 +28,19 @@ SVG_W_START = 'width="'
 SVG_W_END = 'px"'
 SVG_H_START = 'height="'
 SVG_H_END = 'px"'
+SVG_VIEWBOX_TAG = 'viewBox="'
 
 SVG_MAX_WIDTH = 1000
+SVG_MAX_HEIGHT = 1500
 
-AC_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
-AC_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
-AC_DIV_BEGIN = '<ac:structured-macro ac:macro-id='
-AC_DIV_END = '</ac:structured-macro>'
-AC_IMAGE_BEGIN = '<ac:image>'
-AC_IMAGE_END = '</ac:image>'
-AC_IMAGE_BEGIN_WIDTH_1000 = '<ac:image ac:align="center" ac:width="' + \
-    str(SVG_MAX_WIDTH) + '">'
+CONFLUENCE_TAG_AC_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
+CONFLUENCE_TAG_AC_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
+CONFLUENCE_TAG_AC_DIV_BEGIN = '<ac:structured-macro ac:macro-id='
+CONFLUENCE_TAG_AC_DIV_END = '</ac:structured-macro>'
+CONFLUENCE_TAG_AC_IMAGE_BEGIN = '<ac:image>'
+CONFLUENCE_TAG_AC_IMAGE_END = '</ac:image>'
+CONFLUENCE_TAG_AC_IMAGE_BEGIN_WIDTH_1000 = \
+    '<ac:image ac:align="center" ac:width="' + str(SVG_MAX_WIDTH) + '">'
 
 SOURCE_FOLDER = "./engineering-standards"
 CONFLUENCE_SPACE = '~613673678'
@@ -73,10 +75,16 @@ def main():
         convert_files_and_create_confluence_document_tree()
         publish_content_to_confluence()
         filesystem_cleanup()
+    except KeyError:
+        print("Stopped.")
+    except OSError as err:
+        print("OS error: {0}".format(err))
+        raise
     except:
-        filesystem_cleanup()
         print("Unexpected error:", sys.exc_info()[0])
         raise
+    finally:
+        filesystem_cleanup()
 
 
 def filesystem_cleanup():
@@ -86,7 +94,7 @@ def filesystem_cleanup():
     #     print(files)
     # os.remove('./' + TMP_FILE)
     os.system('rm *.tmp')
-    os.system(('rm **/*' + CONFLUENCE_EXTENSION))
+    os.system(('rm **/*' + CONFLUENCE_FILE_EXTENSION))
 
 
 def update_confluence_filter():
@@ -172,7 +180,7 @@ def create_confluence_document_tree(md_files_list):
                 if path_index > 1:
                     parent_id = page_id
                 if path_index > 0:
-                    if md_file.endswith(CONFLUENCE_SECTION_CONTENT_FILE) is not True:
+                    if md_file.endswith(CONFLUENCE_SECTION_CONTENT_FILE) is False:
                         status = update_empty_confluence_page(title, parent_id)
                         page_id = status['id']
                     else:
@@ -187,7 +195,7 @@ def create_confluence_document_tree(md_files_list):
 def convert_md_files():
     global confluence_parent_id_index
     for md_file in confluence_parent_id_index:
-        temp_file_name = md_file[0] + CONFLUENCE_EXTENSION
+        temp_file_name = md_file[0] + CONFLUENCE_FILE_EXTENSION
         PANDOC_OS_COMMAND = 'pandoc -t ' + CONFLUENCE_FILTER_NAME + \
             ' ' + md_file[0] + ' > ' + temp_file_name
         os.system(PANDOC_OS_COMMAND)
@@ -216,20 +224,26 @@ def find_svg_image_link(content):
 
 
 def find_svg_image_dimensions(svg_image_path):
+
     size = []
+
     svg_file = open(svg_image_path)
-    content = svg_file.read()
-    width_tag_begin_position = content.find(SVG_W_START)
-    width_tag_end_position = content.find(SVG_W_END, width_tag_begin_position)
-    width = content[(width_tag_begin_position + len(SVG_W_START))
-                     :width_tag_end_position]
-    height_tag_begin_position = content.find(
-        SVG_H_START, width_tag_end_position)
-    height_tag_end_position = content.find(
-        SVG_H_END, height_tag_begin_position)
-    height = content[(height_tag_begin_position +
-                      len(SVG_H_START)):height_tag_end_position]
+    svg_file_content = svg_file.read()
     svg_file.close()
+
+    width_tag_begin_position = svg_file_content.find(SVG_W_START)
+    width_tag_end_position = svg_file_content.find(
+        SVG_W_END, width_tag_begin_position)
+    width_tag_begin_position += len(SVG_W_START)
+    width = svg_file_content[width_tag_begin_position:width_tag_end_position]
+
+    height_tag_begin_position = svg_file_content.find(
+        SVG_H_START, width_tag_end_position)
+    height_tag_end_position = svg_file_content.find(
+        SVG_H_END, height_tag_begin_position)
+    height = svg_file_content[(height_tag_begin_position +
+                               len(SVG_H_START)):height_tag_end_position]
+
     size = [int(width), int(height)]
     return(size)
 
@@ -238,28 +252,49 @@ def upload_svg_file_to_confluence_as_an_attachment(
         svg_image_path,
         svg_file_name,
         title, page_id,
-        size_override,
+        width_override,
+        height_override,
         svg_size,
         svg_size_new):
+
+    SVG_VIEWBOX_CLOSING_TAG = '" '
+    old_svg_viewbox_tag = ''
+    new_svg_viewbox_tag = ''
 
     svg_file = open(svg_image_path)
     svg_file_content = svg_file.read()
     svg_file.close()
 
-    if size_override:
-        WIDTH_TAG = 'width="'
-        HEIGHT_TAG = 'height="'
-        old_width = WIDTH_TAG + str(svg_size[0])
-        old_height = HEIGHT_TAG + str(svg_size[1])
-        new_width = WIDTH_TAG + str(svg_size_new[0])
-        new_height = HEIGHT_TAG + str(svg_size_new[1])
-        svg_file_content.replace(old_width, new_width)
-        svg_file_content.replace(old_height, new_height)
+    if width_override or height_override:
+        old_width = SVG_W_START + str(svg_size[0]) + SVG_W_END
+        old_height = SVG_H_START + str(svg_size[1]) + SVG_H_END
+        new_width = SVG_W_START + str(svg_size_new[0]) + SVG_W_END
+        new_height = SVG_H_START + str(svg_size_new[1]) + SVG_H_END
 
-        print(old_width, old_height, new_width, new_height)
+        if width_override:
+            new_height = SVG_H_START + 'auto"'
+        if height_override:
+            new_width = SVG_W_START + 'auto"'
+
+        svg_file_content = svg_file_content.replace(
+            old_width, new_width).replace(old_height, new_height)
+
+        svg_viewbox_start = svg_file_content.find(SVG_VIEWBOX_TAG)
+        svg_viewbox_end = svg_file_content.find(
+            SVG_VIEWBOX_CLOSING_TAG, (svg_viewbox_start + len(SVG_W_START)))
+
+        old_svg_viewbox_tag = (
+            svg_file_content[svg_viewbox_start:svg_viewbox_end]
+            + SVG_VIEWBOX_CLOSING_TAG)
+
+        new_svg_viewbox_tag = old_svg_viewbox_tag + \
+            ' preserveAspectRatio="none" '
+
+        svg_file_content = svg_file_content.replace(
+            old_svg_viewbox_tag, new_svg_viewbox_tag)
 
     confluence.attach_content(
-        svg_file_content,
+        content=svg_file_content,
         name=svg_file_name,
         content_type='image',
         page_id=page_id,
@@ -273,18 +308,19 @@ def cleanup_confluence_html(content):
     #     begin = content.find(start)
     #     end = content.find(stop)
     #     return(content.replace((content[begin:end] + add), ''))
-    # content = cleanup(content, AC_STYLE_BEGIN, AC_STYLE_END, AC_STYLE_END)
-    # content = cleanup(content, AC_DIV_BEGIN, AC_IMAGE_BEGIN, '')
-    # content = cleanup(content, AC_IMAGE_END, AC_DIV_END, '')
+    # content = cleanup(content, CONFLUENCE_TAG_AC_STYLE_BEGIN, CONFLUENCE_TAG_AC_STYLE_END, CONFLUENCE_TAG_AC_STYLE_END)
+    # content = cleanup(content, CONFLUENCE_TAG_AC_DIV_BEGIN, CONFLUENCE_TAG_AC_IMAGE_BEGIN, '')
+    # content = cleanup(content, CONFLUENCE_TAG_AC_IMAGE_END, CONFLUENCE_TAG_AC_DIV_END, '')
 
-    begin = content.find(AC_STYLE_BEGIN)
-    end = content.find(AC_STYLE_END)
-    content = content.replace((content[begin:end] + AC_STYLE_END), '')
-    # begin = content.find(AC_DIV_BEGIN)
-    # end = content.find(AC_IMAGE_BEGIN)
+    begin = content.find(CONFLUENCE_TAG_AC_STYLE_BEGIN)
+    end = content.find(CONFLUENCE_TAG_AC_STYLE_END)
+    content = content.replace(
+        (content[begin:end] + CONFLUENCE_TAG_AC_STYLE_END), '')
+    # begin = content.find(CONFLUENCE_TAG_AC_DIV_BEGIN)
+    # end = content.find(CONFLUENCE_TAG_AC_IMAGE_BEGIN)
     # content = content.replace(content[begin:end], '')
-    # begin = content.find(AC_IMAGE_END)
-    # end = content.find(AC_DIV_END)
+    # begin = content.find(CONFLUENCE_TAG_AC_IMAGE_END)
+    # end = content.find(CONFLUENCE_TAG_AC_DIV_END)
     # content = content.replace(content[begin:end], '')
     return (content)
 
@@ -311,7 +347,7 @@ def publish_content_to_confluence():
     global confluence_parent_id_index
     path_index = 0
     for file_record in confluence_parent_id_index:
-        cfl_file_path = file_record[0] + CONFLUENCE_EXTENSION
+        cfl_file_path = file_record[0] + CONFLUENCE_FILE_EXTENSION
 
         # title = find_confluence_title(cfl_content)
         title = file_record[2]
@@ -325,12 +361,13 @@ def publish_content_to_confluence():
 
             for svg_image_path in svg_images:
 
-                SVG_SIZE_OVERRIDE = False
+                SVG_WIDTH_OVERRIDE = False
+                SVG_HEIGHT_OVERRIDE = False
+
                 svg_size_new = []
 
                 if svg_image_path and svg_image_path.endswith(SVG_EXTENSION):
                     svg_file_name = find_svg_image_filename(svg_image_path)
-                    # png_file_name = svg_file_name.replace('.svg', '.png')
                     confluence_file_content = confluence_file_content.replace(
                         svg_image_path, svg_file_name)
                     if svg_image_path.startswith('../../'):
@@ -342,19 +379,26 @@ def publish_content_to_confluence():
 
                     svg_size = find_svg_image_dimensions(svg_image_path)
                     if svg_size:
-                        if int(svg_size[0]) > SVG_MAX_WIDTH:
-                            SVG_SIZE_OVERRIDE = True
+                        if int(svg_size[0]) > SVG_MAX_WIDTH and int(svg_size[0]) > int(svg_size[1]):
+                            SVG_WIDTH_OVERRIDE = True
                             svg_aspect_ratio = (svg_size[0] / svg_size[1])
                             svg_new_height = int(
                                 (SVG_MAX_WIDTH / svg_aspect_ratio))
                             svg_size_new = [SVG_MAX_WIDTH, svg_new_height]
-                            # confluence_file_content = confluence_file_content.replace(
-                            #     AC_IMAGE_BEGIN, AC_IMAGE_BEGIN_WIDTH_1000)
+
+                        if int(svg_size[1]) > SVG_MAX_HEIGHT:
+                            SVG_HEIGHT_OVERRIDE = True
+                            svg_aspect_ratio = (svg_size[1] / svg_size[0])
+                            svg_new_height = int(
+                                (SVG_MAX_HEIGHT / svg_aspect_ratio))
+                            svg_size_new = [SVG_MAX_HEIGHT, svg_new_height]
+
                     upload_svg_file_to_confluence_as_an_attachment(
                         svg_image_path,
                         svg_file_name,
                         title, page_id,
-                        SVG_SIZE_OVERRIDE,
+                        SVG_WIDTH_OVERRIDE,
+                        SVG_HEIGHT_OVERRIDE,
                         svg_size,
                         svg_size_new)
 
