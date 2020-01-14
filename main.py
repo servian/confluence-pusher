@@ -16,38 +16,48 @@ confluence = Confluence(
 
 root_page_id = ''
 confluence_documents_index = ''
-sections = []
 
 
 def main():
 
     try:
+        check_if_configured()
         update_confluence_filter()
         # Think twice before using this as it will delete the main document
         # tree and all the contents!
-        delete_root_page()
-        create_root_page()
+        delete_root_page_if_configured()
+        create_root_page_if_not_exist()
         convert_files_and_create_confluence_document_tree()
         publish_content_to_confluence()
-    # except KeyError:
-    #     print("Stopped.")
-    # except OSError as err:
-    #     print("OS error: {0}".format(err))
-    #     raise
-    except:
+    except KeyError:
         print("Unexpected error:", sys.exc_info()[0])
+        print("Stopped.")
         raise
-    # finally:
+    except OSError as err:
+        print("OS error: {0}".format(err))
+        print("Stopped.")
+        raise
+    except ValueError as err:
+        print(err)
+        print("Stopped.")
+    finally:
+        print("---")
+
+
+def check_if_configured():
+    if CONFLUENCE_URL == '' or CONFLUENCE_USERID == '' or CONFLUENCE_OATOKEN == '':
+        raise ValueError(
+            'Please make sure that the following configuration parameters are configured in config.py:\nCONFLUENCE_URL\nCONFLUENCE_USERID\nCONFLUENCE_OATOKEN')
 
 
 def update_confluence_filter():
     print('###   Updating confluence.lua filter   ###')
-    os.system(UPDATE_CONFLUENCE_FILTER)
+    subprocess.call(UPDATE_CONFLUENCE_FILTER)
 
 
-def delete_root_page():
+def delete_root_page_if_configured():
     global root_page_id
-    if confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME):
+    if DELETE_ROOT_DOCUMENT_ON_STARTUP == True and confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME):
         print('###   Deleting root page of the document   ###')
         root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
         confluence.remove_page(
@@ -56,18 +66,18 @@ def delete_root_page():
             recursive=True)
 
 
-def create_root_page():
+def create_root_page_if_not_exist():
     global root_page_id
-    print('###   Creating root page of the document   ###')
-    create_empty_confluence_page(CONFLUENCE_ROOT_PAGE_NAME)
-    root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
+    if confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME) == False:
+        print('###   Creating root page of the document   ###')
+        create_empty_confluence_page(CONFLUENCE_ROOT_PAGE_NAME)
+        root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
 
 
 def convert_files_and_create_confluence_document_tree():
 
     global confluence_documents_index
     global root_page_id
-    global sections
 
     md_files_list = []
     confluence_index = []
@@ -308,7 +318,8 @@ def resize_and_upload_svg_image(svg_image_path, confluence_file_content, page_id
         upload_svg_file_to_confluence_as_an_attachment(
             svg_image_path,
             svg_file_name,
-            title, page_id,
+            title,
+            page_id,
             SVG_WIDTH_OVERRIDE,
             SVG_HEIGHT_OVERRIDE,
             svg_size,

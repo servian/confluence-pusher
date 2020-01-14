@@ -1,48 +1,66 @@
 # confluence-pusher
 
-A tool to convert documentation from markdown to html and upload it to Confluence. What it does:
+A tool to convert and upload markdown documents into Atlassian Confluence using [Atlassian Python API](https://atlassian-python-api.readthedocs.io/en/latest/index.html).
 
-    *.md -> *.html -> embed svg into html -> upload to Confluence
+## How it works
 
-## Before use
+### The flow
 
-Follow [this link](https://id.atlassian.com/manage/api-tokens) to configure your API token as described [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+Read SOURCE_FOLDER --> Create empty document tree in Confluence --> Resize and attach SVG images --> Upload page contents into Confluence and rename document titles
 
-## 1.Installation
+### File conversion
 
-1.1. Install [Brew](https://brew.sh/):
+It looks over the folder defined in SOURCE_FOLDER parameter in **config.py** and then traversing it looking for markdown files. The folder and document structure are being replicated in Confluence as follows with the document conversion being performed by Pandoc using [this](https://github.com/jpbarrette/pandoc-confluence-writer/blob/master/confluence.lua) custom filter:
 
-    /usr/bin/ruby -e "\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+|Local filesystem|Action|
+| ------------- | ----------- |
+|SOURCE_FOLDER: |Root document as defined by SOURCE_FOLDER parameter in **config.py**
+|> file01.md    |Markdown file to be converted into nesting document under SOURCE_FOLDER name
+|> file02.md    |The markdown headers are being read during the conversion. If not available, file02 is going to be used with markdown file extension dropped
+|> README.md    |Will be converted in root document content
+|> directory01: |Section document
+|>>> file03.md  |Markdown file to be converted into nesting document under directory01 name with the same rules as above
+|>>> README.md  |Will be converted in section content. The section document is to be renamed with markdown header if available
 
-1.2 Run setup.sh:
+## How to use
 
-    sh setup.sh
+### Configure Confluence API token
 
-## 2.Configuration
+Configure your Confluence API token [here](https://id.atlassian.com/manage/api-tokens). More help [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
 
-Change your confluence credentials in credentials.sh:
+## Install - Mac OS X
 
-2.1. To get your wiki link and space name:
+Install [Brew](https://brew.sh/):
+
+```bash
+/usr/bin/ruby -e "\$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+```
+
+Run setup.sh:
+
+```bash
+sh setup.sh
+```
+
+## Configure
+
+Get your wiki link and space name:
 
 ![Confluence link example](./img/configuration.svg)
 
-    CONFLUENCE_SPACE = "xx";
-    CONFLUENCE_WIKI_LINK = "https://vibrato.atlassian.net/wiki";
+### Update following parameters in **config.py**
 
-2.2. Use your email address for CONFLUENCE_USER:
+```properties
+CONFLUENCE_SPACE = "000000000";
+CONFLUENCE_WIKI_LINK = "https://domain.atlassian.net/wiki";
+CONFLUENCE_USER = "xxx.xxx@domain.com.au"
+CONFLUENCE_TOKEN =  "XXX"
+```
 
-    CONFLUENCE_USER = "xxx.xxx@vibrato.com.au"
-
-2.3. Follow [this link](https://id.atlassian.com/manage/api-tokens) to configure your API token as described [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
-
-    CONFLUENCE_TOKEN =  "XXX"
-
-2.4. Parent page ID for your wiki or documentation. Read [this](https://confluence.atlassian.com/doc/create-and-edit-pages-139476.html) to learn how to create it.
-
-    CONFLUENCE_PARENT = "00000000"
-
-## 3.Run
+## Run
 
 Once you configured your credentials in credentials.sh simply run:
 
-    sh run.sh
+```bash
+python3 main.py
+```
