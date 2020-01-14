@@ -108,3 +108,6 @@ venv.bak/
 
 #copy of docsify repo
 /engineering-standards
+
+#mac file
+.DS_Store

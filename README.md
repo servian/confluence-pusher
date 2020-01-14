@@ -4,13 +4,9 @@ A tool to convert documentation from markdown to html and upload it to Confluenc
 
     *.md -> *.html -> embed svg into html -> upload to Confluence
 
-You can also use alternative tool to create content structure in Confluence with YAML files:
+## Before use
 
-    https://github.com/jsinglet/confluence-command-line
-
-Example:
-
-    ccl create-skeleton example.yml
+Follow [this link](https://id.atlassian.com/manage/api-tokens) to configure your API token as described [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
 
 ## 1.Installation
 

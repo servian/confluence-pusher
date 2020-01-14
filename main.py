@@ -2,10 +2,12 @@
 import os
 import re
 import sys
+import subprocess
 
+from subprocess import Popen, PIPE, STDOUT
 from atlassian import Confluence
 
-# from progress.bar import Bar
+from progress.bar import IncrementalBar as Bar
 
 CONFLUENCE_FILTER_NAME = 'confluence.lua'
 CONFLUENCE_FILTER_URL = \
@@ -22,6 +24,10 @@ MD_HEADER_START = '# '
 
 IMG_TAG_START = '<ac:image><ri:attachment ri:filename="'
 IMG_TAG_END = '" /></ac:image>'
+
+GITBOOK_TAB_BEGIN = '{% tab'
+GITBOOK_TAB_END = '%}'
+GITBOOK_TABS_END = 'tabs %}'
 
 SVG_EXTENSION = ".svg"
 SVG_W_START = 'width="'
@@ -51,9 +57,6 @@ CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.replace('./', '')
 CONFLUENCE_SECTION_CONTENT_FILE = "README.md"
 CONFLUENCE_TABLE_OF_CONTENTS = "SUMMARY.md"
 
-OS_COMMAND_LIST_FILES = "find " + SOURCE_FOLDER + " -name '*" + \
-    MD_EXTENSION + "' | sort -fr >> " + TMP_FILE
-
 confluence = Confluence(
     url=CONFLUENCE_URL,
     username=CONFLUENCE_USERID,
@@ -61,59 +64,50 @@ confluence = Confluence(
 
 root_page_id = ''
 confluence_parent_id_index = ''
+sections = []
 
 
 def main():
 
     try:
-        filesystem_cleanup()
-        # update_confluence_filter()
+        update_confluence_filter()
         # Think twice before using this as it will delete the main document
         # tree and all the contents!
         delete_root_page()
         create_root_page()
         convert_files_and_create_confluence_document_tree()
         publish_content_to_confluence()
-        filesystem_cleanup()
-    except KeyError:
-        print("Stopped.")
-    except OSError as err:
-        print("OS error: {0}".format(err))
-        raise
+    # except KeyError:
+    #     print("Stopped.")
+    # except OSError as err:
+    #     print("OS error: {0}".format(err))
+    #     raise
     except:
         print("Unexpected error:", sys.exc_info()[0])
         raise
-    finally:
-        filesystem_cleanup()
-
-
-def filesystem_cleanup():
-    # for root, dirs, files in os.walk(SOURCE_FOLDER):
-    #     print(root)
-    #     print(dirs)
-    #     print(files)
-    # os.remove('./' + TMP_FILE)
-    os.system('rm *.tmp')
-    os.system(('rm **/*' + CONFLUENCE_FILE_EXTENSION))
+    # finally:
 
 
 def update_confluence_filter():
     os.system(UPDATE_CONFLUENCE_FILTER)
 
 
-def create_root_page():
-    global root_page_id
-    create_empty_confluence_page(CONFLUENCE_ROOT_PAGE_NAME)
-    root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
-
-
 def delete_root_page():
     global root_page_id
+    if confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME):
+        print('### Deleting root page of the document ###')
+        root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
+        confluence.remove_page(
+            root_page_id,
+            status=None,
+            recursive=True)
+
+
+def create_root_page():
+    global root_page_id
+    print('### Creating root page of the document ###')
+    create_empty_confluence_page(CONFLUENCE_ROOT_PAGE_NAME)
     root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
-    confluence.remove_page(
-        root_page_id,
-        status=None,
-        recursive=True)
 
 
 def get_confluence_page_id(title):
@@ -138,18 +132,22 @@ def update_empty_confluence_page(name, parent_id):
 
 
 def convert_files_and_create_confluence_document_tree():
-    os.system(OS_COMMAND_LIST_FILES)
-    md_files_list = open(TMP_FILE)
-    create_confluence_document_tree(md_files_list)
-    md_files_list.close()
 
-    convert_md_files()
-
-
-def create_confluence_document_tree(md_files_list):
-    confluence_index = []
     global confluence_parent_id_index
     global root_page_id
+    global sections
+
+    md_files_list = []
+    confluence_index = []
+
+    for root_folder, dirs, files in os.walk(SOURCE_FOLDER):
+        for file in files:
+            if file.endswith(MD_EXTENSION) and file != CONFLUENCE_TABLE_OF_CONTENTS:
+                md_file_entry = root_folder + '/' + file
+                md_files_list.append(md_file_entry)
+
+    progress_bar = Bar(
+        'Creating confluence directory tree', max=len(md_files_list))
 
     for md_file in md_files_list:
 
@@ -163,18 +161,13 @@ def create_confluence_document_tree(md_files_list):
             path_index = 0
             for filesystem_item in filesystem_path_items:
 
-                file = open(md_file)
-                if filesystem_item == filesystem_path_items[-1]:
-                    title = find_markdown_title(file)
-                    file.seek(0)
-                else:
-                    title = filesystem_item
-                file.close()
-
                 if path_index == 0:
                     parent_id = CONFLUENCE_SPACE
                     title = CONFLUENCE_ROOT_PAGE_NAME
                     page_id = root_page_id
+                else:
+                    title = filesystem_item
+
                 if path_index == 1:
                     parent_id = root_page_id
                 if path_index > 1:
@@ -182,23 +175,23 @@ def create_confluence_document_tree(md_files_list):
                 if path_index > 0:
                     if md_file.endswith(CONFLUENCE_SECTION_CONTENT_FILE) is False:
                         status = update_empty_confluence_page(title, parent_id)
-                        page_id = status['id']
-                    else:
-                        page_id = parent_id
+                        page_id = get_confluence_page_id(title)
+
                     confluence_index.append(
                         [md_file, filesystem_item, title, parent_id, page_id])
                 path_index += 1
-
+        progress_bar.next()
+    progress_bar.finish()
     confluence_parent_id_index = confluence_index
 
 
-def convert_md_files():
-    global confluence_parent_id_index
-    for md_file in confluence_parent_id_index:
-        temp_file_name = md_file[0] + CONFLUENCE_FILE_EXTENSION
-        PANDOC_OS_COMMAND = 'pandoc -t ' + CONFLUENCE_FILTER_NAME + \
-            ' ' + md_file[0] + ' > ' + temp_file_name
-        os.system(PANDOC_OS_COMMAND)
+def pandoc_conversion(file_name):
+    PANDOC_COMMAND = ['pandoc', '-t',
+                      CONFLUENCE_FILTER_NAME, file_name, '--quiet']
+    pandoc = subprocess.Popen(PANDOC_COMMAND, stdout=PIPE,
+                              stdin=PIPE, stderr=STDOUT)
+    confluence_content = pandoc.communicate()
+    return(confluence_content[0].decode('UTF-8'))
 
 
 def find_svg_image_filename(link):
@@ -251,7 +244,8 @@ def find_svg_image_dimensions(svg_image_path):
 def upload_svg_file_to_confluence_as_an_attachment(
         svg_image_path,
         svg_file_name,
-        title, page_id,
+        title,
+        page_id,
         width_override,
         height_override,
         svg_size,
@@ -304,34 +298,17 @@ def upload_svg_file_to_confluence_as_an_attachment(
 
 
 def cleanup_confluence_html(content):
-    # def cleanup(content, start, stop, add):
-    #     begin = content.find(start)
-    #     end = content.find(stop)
-    #     return(content.replace((content[begin:end] + add), ''))
-    # content = cleanup(content, CONFLUENCE_TAG_AC_STYLE_BEGIN, CONFLUENCE_TAG_AC_STYLE_END, CONFLUENCE_TAG_AC_STYLE_END)
-    # content = cleanup(content, CONFLUENCE_TAG_AC_DIV_BEGIN, CONFLUENCE_TAG_AC_IMAGE_BEGIN, '')
-    # content = cleanup(content, CONFLUENCE_TAG_AC_IMAGE_END, CONFLUENCE_TAG_AC_DIV_END, '')
-
-    begin = content.find(CONFLUENCE_TAG_AC_STYLE_BEGIN)
-    end = content.find(CONFLUENCE_TAG_AC_STYLE_END)
-    content = content.replace(
-        (content[begin:end] + CONFLUENCE_TAG_AC_STYLE_END), '')
-    # begin = content.find(CONFLUENCE_TAG_AC_DIV_BEGIN)
-    # end = content.find(CONFLUENCE_TAG_AC_IMAGE_BEGIN)
-    # content = content.replace(content[begin:end], '')
-    # begin = content.find(CONFLUENCE_TAG_AC_IMAGE_END)
-    # end = content.find(CONFLUENCE_TAG_AC_DIV_END)
-    # content = content.replace(content[begin:end], '')
+    def content_cleanup(content, begin_tag, end_tag):
+        begin = content.find(begin_tag)
+        end = content.find(end_tag)
+        content = content.replace(
+            (content[begin:end] + end_tag), '')
+        return (content)
+    content = content_cleanup(
+        content, CONFLUENCE_TAG_AC_STYLE_BEGIN, CONFLUENCE_TAG_AC_STYLE_END)
+    content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TAB_END)
+    content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TABS_END)
     return (content)
-
-
-def find_confluence_title(content):
-    CONFLUENCE_NAME_TAG_BEGIN = '<ac:parameter ac:name="">'
-    begin = content.find(CONFLUENCE_NAME_TAG_BEGIN)
-    CONFLUENCE_NAME_TAG_END = '</ac:parameter>'
-    end = content.find(CONFLUENCE_NAME_TAG_END, begin)
-    title = content[begin:end].replace(CONFLUENCE_NAME_TAG_BEGIN, '')
-    return(title)
 
 
 def find_markdown_title(file):
@@ -345,94 +322,90 @@ def find_markdown_title(file):
 
 def publish_content_to_confluence():
     global confluence_parent_id_index
-    path_index = 0
-    for file_record in confluence_parent_id_index:
-        cfl_file_path = file_record[0] + CONFLUENCE_FILE_EXTENSION
+    global root_page_id
 
-        # title = find_confluence_title(cfl_content)
+    progress_bar = Bar(
+        'Publishing content to Confluence', max=len(confluence_parent_id_index))
+    for file_record in confluence_parent_id_index:
+        file_path = file_record[0]
+
         title = file_record[2]
         parent_id = file_record[3]
         page_id = file_record[4]
 
-        with open(cfl_file_path) as fp:
-            confluence_file_content = fp.read()
+        if file_path.endswith(CONFLUENCE_SECTION_CONTENT_FILE):
+            page_id = parent_id
+            parent_name = file_path.replace(
+                ('/' + CONFLUENCE_SECTION_CONTENT_FILE), '').split('/')[-2:-1]
+            if parent_name == '.':
+                parent_id = root_page_id
+            else:
+                parent_id = get_confluence_page_id(parent_name[0])
 
-            svg_images = find_svg_image_link(confluence_file_content)
+        confluence_file_content = pandoc_conversion(file_path)
 
-            for svg_image_path in svg_images:
+        svg_images = find_svg_image_link(confluence_file_content)
 
-                SVG_WIDTH_OVERRIDE = False
-                SVG_HEIGHT_OVERRIDE = False
+        for svg_image_path in svg_images:
+            confluence_file_content = resize_and_upload_svg_image(
+                svg_image_path, confluence_file_content, title, page_id)
 
-                svg_size_new = []
+        confluence_file_content = cleanup_confluence_html(
+            confluence_file_content)
 
-                if svg_image_path and svg_image_path.endswith(SVG_EXTENSION):
-                    svg_file_name = find_svg_image_filename(svg_image_path)
-                    confluence_file_content = confluence_file_content.replace(
-                        svg_image_path, svg_file_name)
-                    if svg_image_path.startswith('../../'):
-                        svg_image_path = svg_image_path.replace(
-                            '../..', SOURCE_FOLDER)
-                    else:
-                        svg_image_path = SOURCE_FOLDER + "/" + \
-                            svg_image_path.replace('../', '')
-
-                    svg_size = find_svg_image_dimensions(svg_image_path)
-                    if svg_size:
-                        if int(svg_size[0]) > SVG_MAX_WIDTH and int(svg_size[0]) > int(svg_size[1]):
-                            SVG_WIDTH_OVERRIDE = True
-                            svg_aspect_ratio = (svg_size[0] / svg_size[1])
-                            svg_new_height = int(
-                                (SVG_MAX_WIDTH / svg_aspect_ratio))
-                            svg_size_new = [SVG_MAX_WIDTH, svg_new_height]
-
-                        if int(svg_size[1]) > SVG_MAX_HEIGHT:
-                            SVG_HEIGHT_OVERRIDE = True
-                            svg_aspect_ratio = (svg_size[1] / svg_size[0])
-                            svg_new_height = int(
-                                (SVG_MAX_HEIGHT / svg_aspect_ratio))
-                            svg_size_new = [SVG_MAX_HEIGHT, svg_new_height]
-
-                    upload_svg_file_to_confluence_as_an_attachment(
-                        svg_image_path,
-                        svg_file_name,
-                        title, page_id,
-                        SVG_WIDTH_OVERRIDE,
-                        SVG_HEIGHT_OVERRIDE,
-                        svg_size,
-                        svg_size_new)
-
-            confluence_file_content = cleanup_confluence_html(
-                confluence_file_content)
-            # print(confluence_file_content)
-            # if file_record[0].endswith(CONFLUENCE_SECTION_CONTENT_FILE):
-            #     # status = confluence.get_page_ancestors(page_id)
-            #     # status = confluence.get_page_by_id(
-            #     #     confluence, page_id, expand=None, status=None, version=None)
-            #     # print(status)
-            #     confluence.update_page(
-            #         page_id=parent_id,
-            #         title=title,
-            #         body=confluence_file_content)
-            # else:
-            confluence.update_page(
-                page_id=page_id,
-                title=title,
-                body=confluence_file_content,
-                parent_id=parent_id,
-                type='page',
-                representation='storage',
-                minor_edit=False)
-
-        path_index += 1
+        confluence.update_page(
+            page_id=page_id,
+            title=title,
+            body=confluence_file_content,
+            parent_id=parent_id,
+            type='page',
+            representation='storage',
+            minor_edit=False)
+        progress_bar.next()
+    progress_bar.finish()
 
 
-def blockConsoleOutput():
-    sys.stdout = open(os.devnull, 'w')
+def resize_and_upload_svg_image(svg_image_path, confluence_file_content, title, page_id):
+    SVG_WIDTH_OVERRIDE = False
+    SVG_HEIGHT_OVERRIDE = False
 
+    svg_size_new = []
 
-def enableConsoleOutput():
-    sys.stdout = sys.__stdout__
+    if svg_image_path and svg_image_path.endswith(SVG_EXTENSION):
+        svg_file_name = find_svg_image_filename(svg_image_path)
+        confluence_file_content = confluence_file_content.replace(
+            svg_image_path, svg_file_name)
+        if svg_image_path.startswith('../../'):
+            svg_image_path = svg_image_path.replace(
+                '../..', SOURCE_FOLDER)
+        else:
+            svg_image_path = SOURCE_FOLDER + "/" + \
+                svg_image_path.replace('../', '')
+
+        svg_size = find_svg_image_dimensions(svg_image_path)
+        if svg_size:
+            if int(svg_size[0]) > SVG_MAX_WIDTH and int(svg_size[0]) > int(svg_size[1]):
+                SVG_WIDTH_OVERRIDE = True
+                svg_aspect_ratio = (svg_size[0] / svg_size[1])
+                svg_new_height = int(
+                    (SVG_MAX_WIDTH / svg_aspect_ratio))
+                svg_size_new = [SVG_MAX_WIDTH, svg_new_height]
+            elif int(svg_size[1]) > SVG_MAX_HEIGHT:
+                SVG_HEIGHT_OVERRIDE = True
+                svg_aspect_ratio = (svg_size[1] / svg_size[0])
+                svg_new_height = int(
+                    (SVG_MAX_HEIGHT / svg_aspect_ratio))
+                svg_size_new = [SVG_MAX_HEIGHT, svg_new_height]
+
+        upload_svg_file_to_confluence_as_an_attachment(
+            svg_image_path,
+            svg_file_name,
+            title, page_id,
+            SVG_WIDTH_OVERRIDE,
+            SVG_HEIGHT_OVERRIDE,
+            svg_size,
+            svg_size_new)
+    return confluence_file_content
 
 
 main()
