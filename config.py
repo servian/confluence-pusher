@@ -12,11 +12,9 @@ CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.replace('./', '')
 CONFLUENCE_FILTER_URL = \
     "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/" + \
     CONFLUENCE_FILTER_NAME
+
 UPDATE_CONFLUENCE_FILTER = "wget " + \
     CONFLUENCE_FILTER_URL + " -O " + CONFLUENCE_FILTER_NAME
-
-CONFLUENCE_FILE_EXTENSION = '.cf'
-TMP_FILE = "_filetemp.tmp"
 
 MD_EXTENSION = '.md'
 MD_HEADER_START = '# '
@@ -40,9 +38,5 @@ SVG_MAX_HEIGHT = 1500
 
 CONFLUENCE_TAG_AC_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
 CONFLUENCE_TAG_AC_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
-CONFLUENCE_TAG_AC_DIV_BEGIN = '<ac:structured-macro ac:macro-id='
-CONFLUENCE_TAG_AC_DIV_END = '</ac:structured-macro>'
 CONFLUENCE_TAG_AC_IMAGE_BEGIN = '<ac:image>'
 CONFLUENCE_TAG_AC_IMAGE_END = '</ac:image>'
-CONFLUENCE_TAG_AC_IMAGE_BEGIN_WIDTH_1000 = \
-    '<ac:image ac:align="center" ac:width="' + str(SVG_MAX_WIDTH) + '">'
