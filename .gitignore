@@ -114,3 +114,4 @@ venv.bak/
 .DS_Store
 config_internal.py
 config_external.py
+.DS_Store
