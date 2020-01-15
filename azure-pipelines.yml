@@ -27,12 +27,17 @@ steps:
       cp config_external.py ./confluence-pusher/config.py
   displayName: 'Replacing config.py with the version without Servian credentials'
 
-- task: Bash@3
+# - task: Bash@3
+#   inputs:
+#     targetType: 'inline'
+#     script: 'bumpversion --dry-run --allow-dirty --verbose patch'
+#     workingDirectory: './'
+#   displayName: 'Bumping package version with minor increment'
+- task: SetVersion@1
   inputs:
-    targetType: 'inline'
-    script: 'bumpversion --dry-run --allow-dirty --verbose patch'
-    workingDirectory: './'
-  displayName: 'Bumping package version with minor increment'
+    version: '$(Build.BuildNumber)'
+    root: './'
+
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
