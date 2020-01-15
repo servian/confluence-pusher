@@ -24,7 +24,7 @@ steps:
     targetType: 'inline'
     script: |
       rm -f ./confluence-pusher/config.py;
-      cp config-external.py ./confluence-pusher/config.py
+      cp config_external.py ./confluence-pusher/config.py
 
 - task: PythonScript@0
   inputs:
@@ -37,5 +37,5 @@ steps:
     targetType: 'inline'
     script: |
       rm -f ./confluence-pusher/config.py;
-      cp config-internal.py ./confluence-pusher/config.py
+      cp config_internal.py ./confluence-pusher/config.py
       
