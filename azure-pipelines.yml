@@ -25,17 +25,25 @@ steps:
     script: |
       rm -f ./confluence-pusher/config.py;
       cp config_external.py ./confluence-pusher/config.py
+  displayName: 'Replacing config.py with the version without Servian credentials'
 
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: './setup.py'
     arguments: 'sdist'
-    
+  displayName: 'Building PyPi package'
+
 - task: Bash@3
   inputs:
     targetType: 'inline'
     script: |
       rm -f ./confluence-pusher/config.py;
       cp config_internal.py ./confluence-pusher/config.py
-      
+  displayName: 'Replacing config.py with the version with Servian credentials'
+
+- task: TwineAuthenticate@1
+  inputs:
+    artifactFeed: 'Servian'
+    pythonUploadServiceConnection: 'PyPi_confluence_pusher_connection'
+
