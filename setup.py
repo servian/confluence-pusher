@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="confluence-pusher",  # Replace with your own username
-    version="0.1.0",
+    version="0.0.1",
     author="Konstantin Vanyushov",
     author_email="Konstantin.Vanyushov@servian.com.au",
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
@@ -17,10 +17,5 @@ setuptools.setup(
     project_urls={
         "Source Code": "https://github.com/servian/confluence-pusher",
     },
-    # classifiers=[
-    #     "Programming Language :: Python :: 3",
-    #     "License :: OSI Approved :: MIT License",
-    #     "Operating System :: OS Independent",
-    # ],
     python_requires='>=3.6',
 )
