@@ -46,5 +46,5 @@ steps:
   inputs:
     artifactFeed: 'Servian'
     pythonUploadServiceConnection: 'PyPi_confluence_pusher_connection'
-- script: 'twine upload -r {PyPi_confluence_pusher_repo} --config-file $(PYPIRC_PATH) {./dist/*}'  
+- script: 'twine upload -r {Servian/PyPi_confluence_pusher_connection} --config-file $(PYPIRC_PATH) {./dist/*}'  
   displayName: 'Uploading package into PyPi repository'    
