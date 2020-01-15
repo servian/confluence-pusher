@@ -31,10 +31,11 @@ steps:
     scriptSource: 'filePath'
     scriptPath: './setup.py'
     arguments: 'sdist'
-
-- task: Bash@4
+    
+- task: Bash@3
   inputs:
     targetType: 'inline'
     script: |
       rm -f ./confluence-pusher/config.py;
       cp config-internal.py ./confluence-pusher/config.py
+      
