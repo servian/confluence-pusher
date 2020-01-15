@@ -1,4 +1,5 @@
 # Python package
+
 # Create and test a Python package on multiple Python versions.
 # Add steps that analyze code, save the dist with the build record, publish to a PyPI-compatible index, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
@@ -23,10 +24,23 @@ steps:
     python -m pip install --upgrade pip
     pip install -r ./confluence-pusher/requirements.txt
   displayName: 'Install dependencies'
-  
+
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      rm -f ./confluence-pusher/config.py;
+      cp config-external.py ./confluence-pusher/config.py
+
 - task: PythonScript@0
   inputs:
     scriptSource: 'filePath'
     scriptPath: './setup.py'
     arguments: 'sdist'
 
+- task: Bash@4
+  inputs:
+    targetType: 'inline'
+    script: |
+      rm -f ./confluence-pusher/config.py;
+      cp config-internal.py ./confluence-pusher/config.py
