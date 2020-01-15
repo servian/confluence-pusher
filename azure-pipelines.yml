@@ -60,10 +60,10 @@ steps:
       cp config_internal.py ./confluence-pusher/config.py
   displayName: 'Replacing config.py with the version with Servian credentials'
 
-  - task: Bash@3
-    inputs:
-      targetType: 'inline'
-      script: |
-        rm -f ./confluence-pusher/config.py;
-        cp config_internal.py ./confluence-pusher/config.py
-    displayName: 'Replacing config.py with the version with Servian credentials'
+- task: Bash@3
+  inputs:
+    targetType: 'inline'
+    script: |
+      rm -f ./confluence-pusher/config.py;
+      cp config_internal.py ./confluence-pusher/config.py
+  displayName: 'Replacing config.py with the version with Servian credentials'
