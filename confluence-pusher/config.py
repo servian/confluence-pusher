@@ -1,0 +1,43 @@
+SOURCE_FOLDER = ""
+CONFLUENCE_SPACE = ''
+CONFLUENCE_URL = ''
+CONFLUENCE_USERID = ''
+CONFLUENCE_OATOKEN = ''
+CONFLUENCE_SECTION_CONTENT_FILE = "README.md"
+CONFLUENCE_TABLE_OF_CONTENTS = "SUMMARY.md"
+CONFLUENCE_FILTER_NAME = 'confluence.lua'
+DELETE_ROOT_DOCUMENT_ON_STARTUP = False
+
+CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.replace('./', '')
+
+CONFLUENCE_FILTER_URL = \
+    "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/" + \
+    CONFLUENCE_FILTER_NAME
+
+UPDATE_CONFLUENCE_FILTER = [
+    "wget", CONFLUENCE_FILTER_URL, "-O ", CONFLUENCE_FILTER_NAME]
+
+MD_EXTENSION = '.md'
+MD_HEADER_START = '# '
+
+IMG_TAG_START = '<ac:image><ri:attachment ri:filename="'
+IMG_TAG_END = '" /></ac:image>'
+
+GITBOOK_TAB_BEGIN = '{% tab'
+GITBOOK_TAB_END = '%}'
+GITBOOK_TABS_END = 'tabs %}'
+
+SVG_EXTENSION = ".svg"
+SVG_W_START = 'width="'
+SVG_W_END = 'px"'
+SVG_H_START = 'height="'
+SVG_H_END = 'px"'
+SVG_VIEWBOX_TAG = 'viewBox="'
+
+SVG_MAX_WIDTH = 1000
+SVG_MAX_HEIGHT = 1500
+
+CONFLUENCE_TAG_AC_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
+CONFLUENCE_TAG_AC_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
+CONFLUENCE_TAG_AC_IMAGE_BEGIN = '<ac:image>'
+CONFLUENCE_TAG_AC_IMAGE_END = '</ac:image>'
