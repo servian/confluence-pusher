@@ -1,3 +1,4 @@
 atlassian-python-api
 bumpversion
 click
+twine
