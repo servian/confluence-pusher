@@ -1,1 +1,1 @@
-from main import main
+from cfpusher import cfpusher

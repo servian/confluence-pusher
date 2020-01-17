@@ -8,7 +8,6 @@ CONFLUENCE_TABLE_OF_CONTENTS = "SUMMARY.md"
 CONFLUENCE_FILTER_NAME = 'confluence.lua'
 DELETE_ROOT_DOCUMENT_ON_STARTUP = False
 
-CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.replace('./', '')
 
 CONFLUENCE_FILTER_URL = \
     "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/" + \
@@ -26,6 +25,8 @@ IMG_TAG_END = '" /></ac:image>'
 GITBOOK_TAB_BEGIN = '{% tab'
 GITBOOK_TAB_END = '%}'
 GITBOOK_TABS_END = 'tabs %}'
+GITBOOK_TABS_SUCCESS = '{% hint style="success" %}'
+GITBOOK_TABS_PAGE_REF = "{% page-ref page="
 
 SVG_EXTENSION = ".svg"
 SVG_W_START = 'width="'

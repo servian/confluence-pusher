@@ -1,0 +1,8 @@
+{
+    "SOURCE_FOLDER": "./engineering-standards",
+    "CONFLUENCE_SPACE": "~613673678",
+    "CONFLUENCE_URL": "https://vibrato.atlassian.net",
+    "CONFLUENCE_USERID": "konstantin.vanyushov@servian.com",
+    "CONFLUENCE_OATOKEN": "ozL4ruBp6vyjIKpj14la749B",
+    "DELETE_ROOT_DOCUMENT_ON_STARTUP": false
+}
