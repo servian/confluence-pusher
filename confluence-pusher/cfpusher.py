@@ -161,19 +161,23 @@ def publish_content_to_confluence():
             page_id = get_confluence_page_id(title)
         else:
             title = find_markdown_title(file_record)
-            print(title)
-            print('---')
             page_id = get_confluence_page_id(title)
-
-        # page_id = get_confluence_page_id(title)
 
         confluence_file_content = pandoc_conversion(file_record)
 
-        svg_images = find_svg_image_link(confluence_file_content)
+        svg_images = find_svg_image_link(
+            confluence_file_content, IMG_TAG_START, IMG_TAG_END)
+        # print(svg_images)
+        # svg_images += find_svg_image_link(
+        #     confluence_file_content, '<img src="', '" title=')
+        # print(svg_images)
 
         for svg_image_path in svg_images:
             confluence_file_content = resize_and_upload_svg_image(
                 svg_image_path, confluence_file_content, page_id)
+
+        confluence_file_content = confluence_file_content.replace(
+            '../..', SOURCE_FOLDER)
 
         confluence_file_content = cleanup_confluence_html(
             confluence_file_content)
@@ -338,17 +342,17 @@ def find_svg_image_filename(link):
     return(link[begin:])
 
 
-def find_svg_image_link(content):
+def find_svg_image_link(content, start_tag, end_tag):
     path = []
     img_tag_begin_positions = [(entry.end()) for entry in list(
-        re.finditer(IMG_TAG_START, content))]
+        re.finditer(start_tag, content))]
     img_tag_end_positions = [(entry.start()) for entry in list(
-        re.finditer(IMG_TAG_END, content))]
+        re.finditer(end_tag, content))]
     index = 0
     for begin in img_tag_begin_positions:
         end = img_tag_end_positions[index]
         img_path = content[begin:end].replace(
-            IMG_TAG_START, "")
+            start_tag, "")
         if img_path:
             path.append(img_path)
         index += 1
@@ -364,11 +368,11 @@ def cleanup_confluence_html(content):
         return (content)
     content = content_cleanup(
         content, CONFLUENCE_TAG_AC_STYLE_BEGIN, CONFLUENCE_TAG_AC_STYLE_END)
-    content = content.replace(GITBOOK_TABS_SUCCESS, '')
-    content = content_cleanup(content, "<p>{% page-ref page=", '</p>')
-    content = content.replace("<p>{% hint style=", '')
-    content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TAB_END)
-    content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TABS_END)
+    # content = content.replace(GITBOOK_TABS_SUCCESS, '')
+    # content = content_cleanup(content, GITBOOK_TABS_PAGE_REF, '»')
+    # content = content_cleanup(
+    #     content, CONFLUENCE_TAG_API_START, CONFLUENCE_TAG_API_END)
+    # content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TABS_END)
     return (content)
 
 
