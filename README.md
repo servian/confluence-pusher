@@ -2,11 +2,13 @@
 
 A tool to convert and upload markdown documents into Atlassian Confluence using [Atlassian Python API](https://atlassian-python-api.readthedocs.io/en/latest/index.html).
 
+---
+
 ## How it works
 
 ### The flow
 
-![the flow](./img/flow.svg)
+![the flow](img/flow.svg)
 
 ### File conversion
 
@@ -24,9 +26,13 @@ It looks over the folder defined in SOURCE_FOLDER parameter in **config.json** a
 |-- file03.md  |Markdown file to be converted into nesting document under directory01 name with the same rules as above
 |-- README.md  |Will be converted in section content. The section document is to be renamed with markdown header if available
 
-## How to use
+---
+
+## Before you begin
 
 ### Configure Confluence API token [here](https://id.atlassian.com/manage/api-tokens). More help [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
+
+---
 
 ## Install
 
@@ -50,6 +56,8 @@ Run setup.sh:
 sh setup.sh
 ```
 
+---
+
 ## Configure
 
 Get your wiki link and space name:
@@ -67,6 +75,8 @@ Get your wiki link and space name:
     "DELETE_ROOT_DOCUMENT_ON_STARTUP": true
 }
 ```
+
+---
 
 ## Run
 
