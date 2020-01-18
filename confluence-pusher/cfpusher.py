@@ -142,7 +142,7 @@ def pandoc_conversion(file_name):
 
     file_contents = file_contents.encode('UTF-8')
     PANDOC_COMMAND = ['pandoc', '-t',
-                      CONFLUENCE_FILTER_NAME, '--quiet']
+                      CONFLUENCE_FILTER_NAME]
     pandoc = subprocess.Popen(PANDOC_COMMAND, stdout=PIPE,
                               stdin=PIPE, stderr=STDOUT)
     confluence_content = pandoc.communicate(input=file_contents)

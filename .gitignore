@@ -121,3 +121,4 @@ venv.bak/
 # Python egg metadata, regenerated from source files by setuptools.
 /*.egg-info
 tool.py
+confluence-pusher/create-config2.sh
