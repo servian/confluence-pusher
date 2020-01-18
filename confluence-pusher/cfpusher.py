@@ -10,18 +10,21 @@ import sys
 from subprocess import PIPE, STDOUT, Popen
 import glob
 
-
-file = open("config.json")
-if file:
-    config_file = file.read()
-    file.close()
-    configuration = json.loads(config_file)
-    CONFLUENCE_SPACE = configuration['CONFLUENCE_SPACE']
-    CONFLUENCE_URL = configuration['CONFLUENCE_URL']
-    CONFLUENCE_USERID = configuration['CONFLUENCE_USERID']
-    CONFLUENCE_OATOKEN = configuration['CONFLUENCE_OATOKEN']
-    DELETE_ROOT_DOCUMENT_ON_STARTUP = configuration['DELETE_ROOT_DOCUMENT_ON_STARTUP']
-
+try:
+    file = open("config.json")
+    if file:
+        config_file = file.read()
+        file.close()
+        configuration = json.loads(config_file)
+        CONFLUENCE_SPACE = configuration['CONFLUENCE_SPACE']
+        CONFLUENCE_URL = configuration['CONFLUENCE_URL']
+        CONFLUENCE_USERID = configuration['CONFLUENCE_USERID']
+        CONFLUENCE_OATOKEN = configuration['CONFLUENCE_OATOKEN']
+        DELETE_ROOT_DOCUMENT_ON_STARTUP = configuration['DELETE_ROOT_DOCUMENT_ON_STARTUP']
+except OSError as err:
+    print("Configuration file not found!")
+    print("OS error: {0}".format(err))
+    raise
 
 confluence = Confluence(
     url=CONFLUENCE_URL,
@@ -46,6 +49,7 @@ def cfpusher(sourcefolder):
         '../', '').replace('./', '')
     try:
         check_if_configured()
+        # update_confluence_filter()
         delete_root_page_if_configured()
         create_root_page_if_not_exist()
         convert_files_and_create_confluence_document_tree()
@@ -129,12 +133,37 @@ def convert_files_and_create_confluence_document_tree():
 
 
 def pandoc_conversion(file_name):
+    md_file = open(file_name)
+    file_contents = md_file.read()
+    md_file.close()
+
+    file_contents = cleanup_markdown_before_conversion(
+        file_contents, GITBOOK_TAG_BEGIN, GITBOOK_TAG_END)
+
+    file_contents = file_contents.encode('UTF-8')
     PANDOC_COMMAND = ['pandoc', '-t',
-                      CONFLUENCE_FILTER_NAME, file_name, '--quiet']
+                      CONFLUENCE_FILTER_NAME, '--quiet']
     pandoc = subprocess.Popen(PANDOC_COMMAND, stdout=PIPE,
                               stdin=PIPE, stderr=STDOUT)
-    confluence_content = pandoc.communicate()
+    confluence_content = pandoc.communicate(input=file_contents)
     return(confluence_content[0].decode('UTF-8'))
+
+
+def cleanup_markdown_before_conversion(content, start_tag, end_tag):
+    gitbook_content_to_remove = []
+    tag_begin_positions = [(entry.end()) for entry in list(
+        re.finditer(start_tag, content))]
+    tag_end_positions = [(entry.start()) for entry in list(
+        re.finditer(end_tag, content))]
+    index = 0
+    for begin in tag_begin_positions:
+        end = tag_end_positions[index]
+        gitbook_content_to_remove.append(
+            start_tag + content[begin:end] + end_tag)
+        index += 1
+    for entry in gitbook_content_to_remove:
+        content = content.replace(entry, '')
+    return (content)
 
 
 def find_markdown_title(file_name):
@@ -167,10 +196,6 @@ def publish_content_to_confluence():
 
         svg_images = find_svg_image_link(
             confluence_file_content, IMG_TAG_START, IMG_TAG_END)
-        # print(svg_images)
-        # svg_images += find_svg_image_link(
-        #     confluence_file_content, '<img src="', '" title=')
-        # print(svg_images)
 
         for svg_image_path in svg_images:
             confluence_file_content = resize_and_upload_svg_image(
@@ -186,7 +211,7 @@ def publish_content_to_confluence():
             page_id=page_id,
             title=title,
             append_body=confluence_file_content)
-    print('Completed.')
+    print('Completed successfully.')
 
 
 def get_confluence_page_id(title):
@@ -368,11 +393,6 @@ def cleanup_confluence_html(content):
         return (content)
     content = content_cleanup(
         content, CONFLUENCE_TAG_AC_STYLE_BEGIN, CONFLUENCE_TAG_AC_STYLE_END)
-    # content = content.replace(GITBOOK_TABS_SUCCESS, '')
-    # content = content_cleanup(content, GITBOOK_TABS_PAGE_REF, '»')
-    # content = content_cleanup(
-    #     content, CONFLUENCE_TAG_API_START, CONFLUENCE_TAG_API_END)
-    # content = content_cleanup(content, GITBOOK_TAB_BEGIN, GITBOOK_TABS_END)
     return (content)
 
 

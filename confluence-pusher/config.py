@@ -22,11 +22,8 @@ MD_HEADER_START = '# '
 IMG_TAG_START = '<ac:image><ri:attachment ri:filename="'
 IMG_TAG_END = '" /></ac:image>'
 
-GITBOOK_TAB_BEGIN = '{% tab'
-GITBOOK_TAB_END = '%}'
-GITBOOK_TABS_END = 'tabs %}'
-GITBOOK_TABS_SUCCESS = '{% hint style="success" %}'
-GITBOOK_TABS_PAGE_REF = "{% page-ref page="
+GITBOOK_TAG_BEGIN = '{%'
+GITBOOK_TAG_END = '%}'
 
 SVG_EXTENSION = ".svg"
 SVG_W_START = 'width="'
@@ -42,5 +39,3 @@ CONFLUENCE_TAG_AC_STYLE_BEGIN = '<ac:structured-macro ac:macro-id="'
 CONFLUENCE_TAG_AC_STYLE_END = '</style>]]></ac:plain-text-body></ac:structured-macro>'
 CONFLUENCE_TAG_AC_IMAGE_BEGIN = '<ac:image>'
 CONFLUENCE_TAG_AC_IMAGE_END = '</ac:image>'
-CONFLUENCE_TAG_API_START = '{% api-method method'
-CONFLUENCE_TAG_API_END = '%}'

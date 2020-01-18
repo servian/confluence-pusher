@@ -28,7 +28,15 @@ It looks over the folder defined in SOURCE_FOLDER parameter in **config.json** a
 
 ### Configure Confluence API token [here](https://id.atlassian.com/manage/api-tokens). More help [here](https://confluence.atlassian.com/cloud/api-tokens-938839638.html).
 
-## Install - Mac OS X
+## Install
+
+### Install from PyPi:
+
+```bash
+pip install confluence-pusher
+```
+
+### Install and run from the source code - Mac OS X
 
 Install [Brew](https://brew.sh/):
 
@@ -67,3 +75,5 @@ Once you configured your credentials in credentials.sh simply run:
 ```bash
 python3 cfpusher.py -s ../dir
 ```
+
+where **../dir** is your folder with markdown files.
