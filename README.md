@@ -8,7 +8,7 @@ A tool to convert and upload markdown documents into Atlassian Confluence using 
 
 ### The flow
 
-![the flow](img/flow.svg)
+![the flow](/img/flow.svg)
 
 ### File conversion
 
