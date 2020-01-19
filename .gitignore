@@ -122,3 +122,4 @@ venv.bak/
 /*.egg-info
 tool.py
 confluence-pusher/create-config2.sh
+config_*
