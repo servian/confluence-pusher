@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="confluence-pusher",  # Replace with your own username
-    version="0.0.8",
+    version="0.0.9",
     author="Konstantin Vanyushov",
     author_email="Konstantin.Vanyushov@servian.com.au",
     description="A tool to convert and upload markdown documents into Atlassian Confluence",

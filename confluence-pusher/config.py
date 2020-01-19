@@ -5,16 +5,12 @@ CONFLUENCE_USERID = ''
 CONFLUENCE_OATOKEN = ''
 CONFLUENCE_SECTION_CONTENT_FILE = "README.md"
 CONFLUENCE_TABLE_OF_CONTENTS = "SUMMARY.md"
-CONFLUENCE_FILTER_NAME = 'confluence.lua'
 DELETE_ROOT_DOCUMENT_ON_STARTUP = False
 
-
-CONFLUENCE_FILTER_URL = \
-    "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/" + \
-    CONFLUENCE_FILTER_NAME
+CONFLUENCE_FILTER_URL = "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/confluence.lua"
 
 UPDATE_CONFLUENCE_FILTER = [
-    "wget", CONFLUENCE_FILTER_URL, "-O ", CONFLUENCE_FILTER_NAME]
+    "wget", "-N", CONFLUENCE_FILTER_URL]
 
 MD_EXTENSION = '.md'
 MD_HEADER_START = '# '
