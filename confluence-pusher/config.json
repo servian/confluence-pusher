@@ -1,7 +1,7 @@
 {
-    "CONFLUENCE_SPACE": ,
-    "CONFLUENCE_URL": ,
-    "CONFLUENCE_USERID": ,
-    "CONFLUENCE_OATOKEN": ,
-    "DELETE_ROOT_DOCUMENT_ON_STARTUP":
+    "CONFLUENCE_SPACE": "",
+    "CONFLUENCE_URL": "https://domain.atlassian.net",
+    "CONFLUENCE_USERID": "email@domain.com",
+    "CONFLUENCE_OATOKEN": "",
+    "DELETE_ROOT_DOCUMENT_ON_STARTUP": true
 }

@@ -45,8 +45,9 @@ def cfpusher(sourcefolder):
     global SOURCE_FOLDER
     global CONFLUENCE_ROOT_PAGE_NAME
     SOURCE_FOLDER = sourcefolder
-    CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.replace(
-        '../', '').replace('./', '')
+
+    CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.split('/')[-1]
+
     try:
         check_if_configured()
         update_confluence_filter()
