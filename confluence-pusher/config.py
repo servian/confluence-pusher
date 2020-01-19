@@ -7,6 +7,8 @@ CONFLUENCE_SECTION_CONTENT_FILE = "README.md"
 CONFLUENCE_TABLE_OF_CONTENTS = "SUMMARY.md"
 DELETE_ROOT_DOCUMENT_ON_STARTUP = False
 
+
+CONFLUENCE_FILTER_NAME = 'confluence.lua'
 CONFLUENCE_FILTER_URL = "https://raw.githubusercontent.com/jpbarrette/pandoc-confluence-writer/master/confluence.lua"
 
 UPDATE_CONFLUENCE_FILTER = [
