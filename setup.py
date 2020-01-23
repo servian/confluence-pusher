@@ -13,7 +13,7 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     packages=setuptools.find_packages(),
     package_data={
-        'confluence-pusher': [requirements.txt', 'confluence.lua']},
+        'confluence-pusher': ['requirements.txt', 'confluence.lua']},
     keywords="confluence markdown confluence-markup servian servian.com.au",
     url="https://www.servian.com/",
     project_urls={
