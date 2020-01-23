@@ -106,9 +106,6 @@ venv.bak/
 # mypy
 .mypy_cache/
 
-#copy of docsify repo
-/engineering-standards
-
 #mac file
 .DS_Store
 
