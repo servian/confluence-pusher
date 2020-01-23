@@ -46,11 +46,11 @@ def cfpusher(sourcefolder):
     global CONFLUENCE_ROOT_PAGE_NAME
     SOURCE_FOLDER = sourcefolder
 
-    CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.split('/')[-1]
+    CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.split('/')[-1].replace('\n', '')
 
     try:
         check_if_configured()
-        update_confluence_filter()
+        # update_confluence_filter()
         delete_root_page_if_configured()
         create_root_page_if_not_exist()
         convert_files_and_create_confluence_document_tree()
@@ -80,7 +80,8 @@ def update_confluence_filter():
 
 def delete_root_page_if_configured():
     global root_page_id
-    if DELETE_ROOT_DOCUMENT_ON_STARTUP == True and confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME):
+    global DELETE_ROOT_DOCUMENT_ON_STARTUP
+    if DELETE_ROOT_DOCUMENT_ON_STARTUP == True:
         print('###   Deleting root page of the document   ###')
         root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
         confluence.remove_page(

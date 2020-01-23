@@ -122,6 +122,5 @@ venv.bak/
 /*.egg-info
 tool.py
 confluence-pusher/create-config2.sh
-config_*.json
-config_external.json
-config_internal.json
+confluence-pusher/*.json
+.vscode/settings.json
