@@ -50,7 +50,7 @@ def cfpusher(sourcefolder):
 
     try:
         check_if_configured()
-        # update_confluence_filter()
+        update_confluence_filter()
         delete_root_page_if_configured()
         create_root_page_if_not_exist()
         convert_files_and_create_confluence_document_tree()
