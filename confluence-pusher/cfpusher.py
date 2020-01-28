@@ -17,6 +17,7 @@ try:
         file.close()
         configuration = json.loads(config_file)
         CONFLUENCE_SPACE = configuration['CONFLUENCE_SPACE']
+        CONFLUENCE_PARENT_PAGE = configuration['CONFLUENCE_PARENT_PAGE']
         CONFLUENCE_URL = configuration['CONFLUENCE_URL']
         CONFLUENCE_USERID = configuration['CONFLUENCE_USERID']
         CONFLUENCE_OATOKEN = configuration['CONFLUENCE_OATOKEN']
@@ -93,10 +94,22 @@ def delete_root_page_if_configured():
 def create_root_page_if_not_exist():
     global root_page_id
     if confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME) == False:
+
         print('###   Creating root page of the document   ###')
-        create_empty_confluence_page(CONFLUENCE_ROOT_PAGE_NAME)
+
+        if CONFLUENCE_PARENT_PAGE:
+            confluence.create_page(
+                space=CONFLUENCE_SPACE,
+                title=CONFLUENCE_ROOT_PAGE_NAME,
+                body="",
+                parent_id=CONFLUENCE_PARENT_PAGE)
+        else:
+            confluence.create_page(
+                space=CONFLUENCE_SPACE,
+                title=CONFLUENCE_ROOT_PAGE_NAME,
+                body="")
         root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
-        print(root_page_id)
+        print("Root page ID: ", root_page_id)
 
 
 def convert_files_and_create_confluence_document_tree():
@@ -223,13 +236,6 @@ def get_confluence_page_id(title):
     return(confluence.get_page_id(
         space=CONFLUENCE_SPACE,
         title=title))
-
-
-def create_empty_confluence_page(title):
-    return(confluence.create_page(
-        space=CONFLUENCE_SPACE,
-        title=title,
-        body=""))
 
 
 def update_empty_confluence_page(name, parent_id):
