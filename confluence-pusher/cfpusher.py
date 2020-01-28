@@ -142,6 +142,9 @@ def pandoc_conversion(file_name):
     file_contents = cleanup_markdown_before_conversion(
         file_contents, GITBOOK_TAG_BEGIN, GITBOOK_TAG_END)
 
+    file_contents = cleanup_markdown_before_conversion(
+        file_contents, MD_COMMENT_START, MD_COMMENT_END)
+
     file_contents = file_contents.encode('UTF-8')
     PANDOC_COMMAND = ['pandoc', '-t',
                       CONFLUENCE_FILTER_NAME]

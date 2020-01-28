@@ -17,6 +17,8 @@ UPDATE_CONFLUENCE_FILTER = [
 
 MD_EXTENSION = '.md'
 MD_HEADER_START = '# '
+MD_COMMENT_START = '<!--'
+MD_COMMENT_END = '-->'
 
 IMG_TAG_START = '<ac:image><ri:attachment ri:filename="'
 IMG_TAG_END = '" /></ac:image>'
