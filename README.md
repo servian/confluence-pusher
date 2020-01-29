@@ -72,7 +72,6 @@ Get your wiki link and space name:
     "CONFLUENCE_PARENT_PAGE": "", // leaving this blank will put document root page directly into Confluence space listed above
     "CONFLUENCE_URL": "https://domain.atlassian.net",
     "CONFLUENCE_USERID": "your.email@domain.com",
-    "CONFLUENCE_OATOKEN": "",
     "DELETE_ROOT_DOCUMENT_ON_STARTUP": true
 }
 ```
@@ -84,7 +83,7 @@ Get your wiki link and space name:
 Once you configured your credentials in credentials.sh simply run:
 
 ```bash
-python3 cfpusher.py -s ../dir
+python3 cfpusher.py -s ../dir -t oauthtoken
 ```
 
-where **../dir** is your folder with markdown files.
+where **../dir** is your folder with markdown files and **oauthtoken** is [Confluence API token](https://id.atlassian.com/manage/api-tokens).

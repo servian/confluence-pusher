@@ -20,42 +20,44 @@ try:
         CONFLUENCE_PARENT_PAGE = configuration['CONFLUENCE_PARENT_PAGE']
         CONFLUENCE_URL = configuration['CONFLUENCE_URL']
         CONFLUENCE_USERID = configuration['CONFLUENCE_USERID']
-        CONFLUENCE_OATOKEN = configuration['CONFLUENCE_OATOKEN']
         DELETE_ROOT_DOCUMENT_ON_STARTUP = configuration['DELETE_ROOT_DOCUMENT_ON_STARTUP']
 except OSError as err:
     print("Configuration file not found!")
     print("OS error: {0}".format(err))
     raise
 
-confluence = Confluence(
-    url=CONFLUENCE_URL,
-    username=CONFLUENCE_USERID,
-    password=CONFLUENCE_OATOKEN)
-
 root_page_id = ''
 confluence_documents_index = ''
 file_list = []
 
 CONFLUENCE_ROOT_PAGE_NAME = ''
+CONFLUENCE_OATOKEN = ''
 
 
 @click.command()
 @click.option('-s', '--source-folder', 'sourcefolder', required=True, type=str)
-def cfpusher(sourcefolder):
+@click.option('-t', '--oauth-token', 'oauthtoken', required=True, type=str)
+def cfpusher(sourcefolder, oauthtoken):
     global root_page_id
     global SOURCE_FOLDER
+    global CONFLUENCE_OATOKEN
     global CONFLUENCE_ROOT_PAGE_NAME
     SOURCE_FOLDER = sourcefolder
-
+    CONFLUENCE_OATOKEN = oauthtoken
     CONFLUENCE_ROOT_PAGE_NAME = SOURCE_FOLDER.split('/')[-1].replace('\n', '')
+
+    confluence = Confluence(
+        url=CONFLUENCE_URL,
+        username=CONFLUENCE_USERID,
+        password=CONFLUENCE_OATOKEN)
 
     try:
         check_if_configured()
         update_confluence_filter()
-        delete_root_page_if_configured()
-        create_root_page_if_not_exist()
-        convert_files_and_create_confluence_document_tree()
-        publish_content_to_confluence()
+        delete_root_page_if_configured(confluence)
+        create_root_page_if_not_exist(confluence)
+        convert_files_and_create_confluence_document_tree(confluence)
+        publish_content_to_confluence(confluence)
     except KeyError:
         print("Unexpected error:", sys.exc_info()[0])
         raise
@@ -79,19 +81,25 @@ def update_confluence_filter():
     subprocess.call(UPDATE_CONFLUENCE_FILTER)
 
 
-def delete_root_page_if_configured():
+def delete_root_page_if_configured(confluence):
     global root_page_id
     global DELETE_ROOT_DOCUMENT_ON_STARTUP
+    print(CONFLUENCE_ROOT_PAGE_NAME)
     if DELETE_ROOT_DOCUMENT_ON_STARTUP == True:
         print('###   Deleting root page of the document   ###')
-        root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
-        confluence.remove_page(
-            root_page_id,
-            status=None,
-            recursive=True)
+        root_page_id = get_confluence_page_id(
+            confluence, CONFLUENCE_ROOT_PAGE_NAME)
+        print(root_page_id)
+        if root_page_id:
+            confluence.remove_page(
+                root_page_id,
+                status=None,
+                recursive=True)
+        else:
+            print('Root page does not exist.')
 
 
-def create_root_page_if_not_exist():
+def create_root_page_if_not_exist(confluence):
     global root_page_id
     if confluence.page_exists(CONFLUENCE_SPACE, CONFLUENCE_ROOT_PAGE_NAME) == False:
 
@@ -108,11 +116,12 @@ def create_root_page_if_not_exist():
                 space=CONFLUENCE_SPACE,
                 title=CONFLUENCE_ROOT_PAGE_NAME,
                 body="")
-        root_page_id = get_confluence_page_id(CONFLUENCE_ROOT_PAGE_NAME)
+        root_page_id = get_confluence_page_id(
+            confluence, CONFLUENCE_ROOT_PAGE_NAME)
         print("Root page ID: ", root_page_id)
 
 
-def convert_files_and_create_confluence_document_tree():
+def convert_files_and_create_confluence_document_tree(confluence):
     global confluence_documents_index
     global root_page_id
     global file_list
@@ -129,20 +138,24 @@ def convert_files_and_create_confluence_document_tree():
                 if item.endswith(CONFLUENCE_SECTION_CONTENT_FILE) == False:
                     if index == 0 and item.endswith(MD_EXTENSION):
                         title = find_markdown_title(files)
-                        update_empty_confluence_page(title, root_page_id)
+                        update_empty_confluence_page(
+                            confluence, title, root_page_id)
                     if index == 0 and item.endswith(MD_EXTENSION) == False:
                         title = item
-                        update_empty_confluence_page(title, root_page_id)
+                        update_empty_confluence_page(
+                            confluence, title, root_page_id)
                     if index > 0 and item.endswith(MD_EXTENSION):
                         title = find_markdown_title(files)
-                        parent_id = get_confluence_page_id(
-                            (file_record[index-1]))
-                        update_empty_confluence_page(title, parent_id)
+                        parent_id = get_confluence_page_id(confluence,
+                                                           (file_record[index-1]))
+                        update_empty_confluence_page(
+                            confluence, title, parent_id)
                     if index > 0 and item.endswith(MD_EXTENSION) == False:
                         title = item
-                        parent_id = get_confluence_page_id(
-                            (file_record[index-1]))
-                        update_empty_confluence_page(title, parent_id)
+                        parent_id = get_confluence_page_id(confluence,
+                                                           (file_record[index-1]))
+                        update_empty_confluence_page(
+                            confluence, title, parent_id)
                 index += 1
             file_list.append(files)
 
@@ -195,7 +208,7 @@ def find_markdown_title(file_name):
     return(title)
 
 
-def publish_content_to_confluence():
+def publish_content_to_confluence(confluence):
     global confluence_documents_index
     global root_page_id
     global file_list
@@ -205,10 +218,10 @@ def publish_content_to_confluence():
     for file_record in file_list:
         if file_record.endswith(CONFLUENCE_SECTION_CONTENT_FILE) == True:
             title = file_record.split('/')[-2]
-            page_id = get_confluence_page_id(title)
+            page_id = get_confluence_page_id(confluence, title)
         else:
             title = find_markdown_title(file_record)
-            page_id = get_confluence_page_id(title)
+            page_id = get_confluence_page_id(confluence, title)
 
         confluence_file_content = pandoc_conversion(file_record)
 
@@ -216,8 +229,8 @@ def publish_content_to_confluence():
             confluence_file_content, IMG_TAG_START, IMG_TAG_END)
 
         for svg_image_path in svg_images:
-            confluence_file_content = resize_and_upload_svg_image(
-                svg_image_path, confluence_file_content, page_id)
+            confluence_file_content = resize_and_upload_svg_image(confluence,
+                                                                  svg_image_path, confluence_file_content, page_id)
 
         confluence_file_content = confluence_file_content.replace(
             '../..', SOURCE_FOLDER)
@@ -232,13 +245,13 @@ def publish_content_to_confluence():
     print('Completed successfully.')
 
 
-def get_confluence_page_id(title):
+def get_confluence_page_id(confluence, title):
     return(confluence.get_page_id(
         space=CONFLUENCE_SPACE,
         title=title))
 
 
-def update_empty_confluence_page(name, parent_id):
+def update_empty_confluence_page(confluence, name, parent_id):
     return (confluence.update_or_create(
         parent_id=parent_id,
         title=name,
@@ -272,6 +285,7 @@ def check_and_update_svg_image_dimensions(svg_image_path):
 
 
 def upload_svg_file_to_confluence_as_an_attachment(
+        confluence,
         svg_image_path,
         svg_file_name,
         title,
@@ -326,7 +340,7 @@ def upload_svg_file_to_confluence_as_an_attachment(
         comment=None)
 
 
-def resize_and_upload_svg_image(svg_image_path, confluence_file_content, page_id):
+def resize_and_upload_svg_image(confluence, svg_image_path, confluence_file_content, page_id):
     SVG_WIDTH_OVERRIDE = False
     SVG_HEIGHT_OVERRIDE = False
 
@@ -362,6 +376,7 @@ def resize_and_upload_svg_image(svg_image_path, confluence_file_content, page_id
                 svg_size_new = [SVG_MAX_HEIGHT, svg_new_height]
 
         upload_svg_file_to_confluence_as_an_attachment(
+            confluence,
             svg_image_path,
             svg_file_name,
             title,
