@@ -9,7 +9,7 @@ DELETE_ROOT_DOCUMENT_ON_STARTUP = True
 
 
 CONFLUENCE_FILTER_NAME = 'confluence.lua'
-CONFLUENCE_FILTER_URL = "https://raw.githubusercontent.com/itworks99/pandoc-confluence-writer/master/confluence.lua"
+CONFLUENCE_FILTER_URL = "./confluence.lua"
 
 UPDATE_CONFLUENCE_FILTER = [
     "wget", "-N", CONFLUENCE_FILTER_URL]
