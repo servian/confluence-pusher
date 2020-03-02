@@ -1,23 +1,33 @@
-import setuptools
+from setuptools import setup, find_packages
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
-setuptools.setup(
-    name="confluence-pusher",  # Replace with your own username
-    version="0.0.18",
-    author="Konstantin Vanyushov",
-    author_email="Konstantin.Vanyushov@servian.com.au",
+setup(
+    name="confluence-pusher",
+    version="0.1",
+    license='MIT',
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
     long_description=long_description,
-    long_description_content_type="text/markdown",
-    packages=setuptools.find_packages(),
+    longs_description_content_type="text/markdown",
+    packages=["cfpusher"],
     package_data={
-        'confluence-pusher': ['requirements.txt', 'confluence.lua']},
-    keywords="confluence markdown confluence-markup servian servian.com.au",
+        "cfpusher": ["confluence.lua"],
+    },
+    install_requires=['atlassian-python-api','click'],
+    keywords="confluence markdown",
     url="https://www.servian.com/",
     project_urls={
-        "Source Code": "https://github.com/servian/confluence-pusher",
-    },
+        "Source Code": "https://github.com/servian/confluence-pusher"},
     python_requires='>=3.6',
+    entry_points={
+          'console_scripts': [
+              'cfpusher = cfpusher.__main__:main'
+          ]
+    },
+    classifiers=[
+        "Programming Language :: Python :: 3",
+        "License :: OSI Approved :: MIT License",
+        "Operating System :: OS Independent",
+    ]
 )

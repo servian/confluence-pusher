@@ -1,8 +1,0 @@
-echo '{
-    "CONFLUENCE_SPACE": "",
-    "CONFLUENCE_PARENT_PAGE": "",
-    "CONFLUENCE_URL": "https://domain.atlassian.net",
-    "CONFLUENCE_USERID": "email@domain.com",
-    "CONFLUENCE_OATOKEN": "",
-    "DELETE_ROOT_DOCUMENT_ON_STARTUP": true
-}' >config.json
