@@ -1,8 +1,8 @@
 {
-    "CONFLUENCE_SPACE": "~613673678",
-    "CONFLUENCE_PARENT_PAGE": "728439130",
-    "CONFLUENCE_URL": "https://vibrato.atlassian.net",
-    "CONFLUENCE_USERID": "konstantin.vanyushov@servian.com",
-    "CONFLUENCE_OATOKEN": "ozL4ruBp6vyjIKpj14la749B",
-    "DELETE_ROOT_DOCUMENT_ON_STARTUP": true
+    "CONFLUENCE_SPACE": "",
+    "CONFLUENCE_PARENT_PAGE": "",
+    "CONFLUENCE_URL": "",
+    "CONFLUENCE_USERID": "",
+    "CONFLUENCE_OATOKEN": "",
+    "DELETE_ROOT_DOCUMENT_ON_STARTUP": false
 }
