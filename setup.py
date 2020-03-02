@@ -4,9 +4,15 @@ from setuptools import setup, find_packages
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+version = ''
+
+if sys.argv[2]:
+    version = sys.argv[2]
+    del sys.argv[2]
+
 setup(
     name="confluence-pusher",
-    version=sys.argv[1],
+    version=version,
     license='MIT',
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
     long_description=long_description,
