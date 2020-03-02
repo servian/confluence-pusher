@@ -36,7 +36,7 @@ Configure Confluence API
 
 Get your wiki link and space name:
 
-```url
+```
  https://domain.atlassian.net/wiki/spaces/0000000000
 |----------wiki_address-----------|      |space_name|
 ```
