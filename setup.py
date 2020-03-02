@@ -1,6 +1,4 @@
 import sys
-from setuptools import setup, find_packages
-
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
@@ -9,6 +7,8 @@ version = ''
 if sys.argv[2]:
     version = sys.argv[2]
     del sys.argv[2]
+
+from setuptools import setup, find_packages
 
 setup(
     name="confluence-pusher",
