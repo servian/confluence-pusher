@@ -18,14 +18,14 @@ PARENT_PAGE_NAME = ''
 OVERWRITE = False
 
 @click.command()
-@click.argument('-f', '--source-folder', required=False, type=str)
-@click.argument('-u', '--url', required=True, type=str)
-@click.argument('-l', '--user-id', required=True, type=str)
-@click.argument('-t', '--oauth-token', required=True, type=str)
-@click.argument('-s', '--space', required=True, type=str)
-@click.argument('-p', '--parent-page', required=True, type=str)
-@click.argument('-r', '--root-page', required=True, type=str)
-@click.option('-o', '--overwrite', is_flag=True)
+@click.argument('--source-folder', required=False, type=str)
+@click.argument('--url', required=True, type=str)
+@click.argument('--user-id', required=True, type=str)
+@click.argument('--oauth-token', required=True, type=str)
+@click.argument('--space', required=True, type=str)
+@click.argument('--parent-page', required=True, type=str)
+@click.argument('--root-page', required=True, type=str)
+@click.option('--overwrite', is_flag=True)
 def main(source_folder, oauth_token, root_page, space, parent_page, url, user_id, overwrite=False):
 
     global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE
