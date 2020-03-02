@@ -12,12 +12,12 @@ A tool to convert and upload markdown documents into Atlassian Confluence using 
 
 The source folder is traversed for markdown files. The folder and document structures are replicated in Confluence. The document conversion is performed using Pandoc with the [pandoc-confluence-writer](https://github.com/jpbarrette/pandoc-confluence-writer/blob/master/confluence.lua) custom filter:
 
-| Local | Confluence |
-| :-- | :--- |
-| `Root Folder` | Root Document |
-| `README.md` | Root Document Content |
-| `others.md` | Sub-Page under Root Document |
-| `Sub-Directory` | Section Document |
+| Local         | Confluence                   |
+| :------------ | :--------------------------- |
+| Root Folder   | Root Document                |
+| README.md     | Root Document Content        |
+| others.md     | Sub-Page under Root Document |
+| Sub-Directory | Section Document             |
 
 The document names are renamed to reflect the H1 markdown header if available.
 
@@ -29,24 +29,3 @@ Configure Confluence API
 
 - <https://id.atlassian.com/manage/api-tokens>
 - <https://confluence.atlassian.com/cloud/api-tokens-938839638.html>
-
----
-
-## Configure
-
-Get your wiki link and space name:
-
-```
- https://domain.atlassian.net/wiki/spaces/0000000000
-|----------wiki_address-----------|      |space_name|
-```
-
----
-
-## Run
-
-Once you configured your credentials in credentials.sh simply run:
-
-```bash
-python3 cfpusher.py -t oauthtoken
-```
