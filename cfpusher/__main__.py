@@ -31,6 +31,7 @@ def main(source_folder, oauth_token, space, parent_page, url, user_id, overwrite
     global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE, CONF_LUA
 
     CONF_LUA = __file__.replace("__main__.py","confluence.lua")
+    print(CONF_LUA)
 
     if source_folder:
         SOURCE_FOLDER = source_folder
