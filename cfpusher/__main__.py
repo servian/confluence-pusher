@@ -24,9 +24,8 @@ OVERWRITE = False
 @click.option('--oauth-token', required=True, type=str)
 @click.option('--space', required=True, type=str)
 @click.option('--parent-page', required=True, type=str)
-@click.option('--root-page', required=True, type=str)
 @click.option('--overwrite', is_flag=True)
-def main(source_folder, oauth_token, root_page, space, parent_page, url, user_id, overwrite=False):
+def main(source_folder, oauth_token, space, parent_page, url, user_id, overwrite=False):
 
     global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE
     if source_folder:
@@ -34,7 +33,7 @@ def main(source_folder, oauth_token, root_page, space, parent_page, url, user_id
     else:
         SOURCE_FOLDER = os.getcwd()
 
-    ROOT_PAGE_NAME = root_page
+    ROOT_PAGE_NAME = SOURCE_FOLDER.split('/')[-1].replace('\n', '')
     PARENT_PAGE_NAME = parent_page
     OVERWRITE = overwrite
     SPACE = space
