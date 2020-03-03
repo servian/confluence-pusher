@@ -6,7 +6,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="confluence-pusher",
-    version="#{$(major).$(minor).$(Build.BuildId)}#",
+    version="#{major}#.#{minor}#.#{Build.BuildId}#",
     license='MIT',
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
     long_description=long_description,
