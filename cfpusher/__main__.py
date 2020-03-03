@@ -1,4 +1,4 @@
-import sys, re, os, json, glob, click, subprocess
+import re, os, click, subprocess
 from subprocess import PIPE, STDOUT, Popen
 from atlassian import Confluence
 
