@@ -12,7 +12,7 @@ with open("README.md", "r") as fh:
 
 setup(
     name="confluence-pusher",
-    version="0.1.2",
+    version="0.2.0",
     license='MIT',
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
     long_description=long_description,
