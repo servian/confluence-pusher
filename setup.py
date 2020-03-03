@@ -9,7 +9,7 @@ with open("README.md", "r") as fh:
 # if sys.argv[2]:
 #     version = sys.argv[2]
 #     del sys.argv[2]
-$(major).$(minor).$(Build.BuildId)
+#$(major).$(minor).$(Build.BuildId)
 setup(
     name="confluence-pusher",
     version="0.2.10000",
