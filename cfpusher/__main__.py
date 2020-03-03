@@ -16,6 +16,7 @@ SOURCE_FOLDER = ''
 SPACE = ''
 PARENT_PAGE_NAME = ''
 OVERWRITE = False
+CONF_LUA = ''
 
 @click.command()
 @click.option('--source-folder', required=False, type=str)
@@ -27,7 +28,10 @@ OVERWRITE = False
 @click.option('--overwrite', is_flag=True)
 def main(source_folder, oauth_token, space, parent_page, url, user_id, overwrite=False):
 
-    global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE
+    global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE, CONF_LUA
+
+    CONF_LUA = __file__.replace("__main__.py","confluence.lua")
+
     if source_folder:
         SOURCE_FOLDER = source_folder
     else:
@@ -147,7 +151,7 @@ def pandoc_conversion(file_name):
 
     file_contents = file_contents.encode('UTF-8')
     PANDOC_COMMAND = ['pandoc', '-t',
-                      'confluence.lua']
+                      CONF_LUA]
     pandoc = subprocess.Popen(PANDOC_COMMAND, stdout=PIPE,
                               stdin=PIPE, stderr=STDOUT)
     confluence_content = pandoc.communicate(input=file_contents)
