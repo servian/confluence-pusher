@@ -12,14 +12,13 @@ CONF = ''
 LUA = ''
 
 @click.command()
-@click.option('--source-folder', required=False, type=str)
 @click.option('--url', required=True, type=str)
 @click.option('--user-id', required=True, type=str)
 @click.option('--oauth-token', required=True, type=str)
 @click.option('--space', required=True, type=str)
 @click.option('--parent-page', required=True, type=str)
 @click.option('--overwrite', is_flag=True)
-def main(oauth_token, space, parent_page, url, user_id, overwrite=True, source_folder=os.getcwd()):
+def main(oauth_token, space, parent_page, url, user_id, overwrite=True):
 
     global LUA, CONF, SPACE
 
@@ -27,24 +26,34 @@ def main(oauth_token, space, parent_page, url, user_id, overwrite=True, source_f
     LUA = __file__.replace("__main__.py","confluence.lua")
     CONF = Confluence(url,user_id,oauth_token)
     parent = CONF.get_page_by_id(parent_page)
-    if not parent: raise Exception ("parent_page %s not found" % (parent_page))
+    if 'statusCode' in parent: raise Exception ("parent_page %s not found" % (parent_page))
 
     if overwrite:
         child_pages = CONF.get_child_pages(parent_page)
         for child_page in child_pages:
-            CONF.remove_page(child_page,recursive=True)
+            CONF.remove_page(child_page['id'],recursive=True)
 
+    source_folder = os.getcwd()
     create_page(source_folder, parent_page)
 
 def create_page(path,parent_page):
     if os.path.isfile(path) and path.endswith(".md"):
         create_page_file(path, parent_page)
+
     elif os.path.isdir(path):
-        this_page_id = create_page_file(path + ROOT_FILE, parent_page)
+
+        this_file = os.path.join(path, ROOT_FILE)
+        this_page_id = create_page_file(this_file, parent_page)
         child_paths = os.listdir(path)
+
         for child_path in child_paths:
-            if not child_path == (path + ROOT_FILE):
-                create_page(child_path, this_page_id)
+
+            full_child_path = os.path.join(path,child_path)
+            is_dir = os.path.isdir(full_child_path)
+            is_md = os.path.basename(full_child_path).endswith(".md")
+
+            if not full_child_path == this_file and (is_dir or is_md):
+                create_page(full_child_path, this_page_id)
     else:
         raise Exception ("Specified path: %s is invalid to create a page from." % (path))
 
@@ -57,8 +66,8 @@ def create_page_file(path, parent_page):
         new_page = CONF.create_page(SPACE,title,'',parent_page)
     else: raise Exception ("Duplicate page with title %s in space %s" % (title, SPACE))
     if os.path.exists(path) and os.path.isfile(path) and os.path.basename(path).endswith(".md"):
-        update_content(path,new_page.id,title)
-    return new_page.id
+        update_content(path,new_page['id'],title)
+    return new_page['id']
 
 def pandoc_conversion(file_name):
     md_file = open(file_name)
@@ -75,12 +84,13 @@ def pandoc_conversion(file_name):
 def get_markdown_header(path):
     title = ''
     if os.path.exists(path) and os.path.isfile(path) and os.path.basename(path).endswith(".md"):
-        file = open(path)
-        for line in file:
+        md_file = open(path)
+        for line in md_file:
             if line.strip().startswith("# "):
                 title = line.replace("# ", '')
                 title = title.replace('\n', '')
-        file.close()
+                break
+        md_file.close()
     return(title)
 
 def update_content(path,page_id,title):
@@ -94,9 +104,9 @@ def update_content(path,page_id,title):
     # TEST TO SEE HOW THE IMAGE RELATIVE PATHS ARE HANDLED
 
     # UPLOAD ALL IMAGES
-    for path in svg_images:
-        svg_content = resize_svg(path,SVG_MAX_WIDTH,SVG_MAX_HEIGHT)
-        file_name = os.path.basename(path)
+    for spath in svg_images:
+        svg_content = resize_svg(os.path.join(os.path.dirname(path),spath),SVG_MAX_WIDTH,SVG_MAX_HEIGHT)
+        file_name = os.path.basename(spath)
         CONF.attach_content(svg_content, file_name, 'image', page_id)
 
     # REMOVE RANDOM TAG
@@ -115,10 +125,10 @@ def resize_svg(path,w_constrain,h_constrain):
     svg_file.close()
 
     # Get current size
-    w_regex = r"width=\"(\d*)px\""
-    width = (re.findall(w_regex, content))[0]
-    h_regex = r"height=\"(\d*)px\""
-    height = (re.findall(h_regex, content))[0]
+    w_regex = r"(width=\")(\d*)(px\")"
+    width = (re.findall(w_regex, content))[0][1]
+    h_regex = r"(height=\")(\d*)(px\")"
+    height = (re.findall(h_regex, content))[0][1]
 
     new_width = int(width)
     new_height = int(height)
@@ -132,11 +142,11 @@ def resize_svg(path,w_constrain,h_constrain):
         new_width = int(SVG_MAX_HEIGHT / ratio)
         new_height = SVG_MAX_HEIGHT
 
-    content = re.sub(w_regex, new_width, content, 1)
-    content = re.sub(h_regex, new_height, content, 1)
-    vb_regex = r"viewBox=\"([\d\s]*)\""
+    content = re.sub(w_regex, r'\g<1>' + str(new_width) + r'\g<3>', content, 1)
+    content = re.sub(h_regex, r'\g<1>' + str(new_height) + r'\g<3>', content, 1)
     viewBox = "0 0 %s %s" % (width, height)
-    content = re.sub(vb_regex, viewBox, content, 1)
+    vb_regex = r"(viewBox=\")([\-\.\d\s]*)(\")"
+    content = re.sub(vb_regex, r'\g<1>' + viewBox + r'\g<3>', content, 1)
 
     return content
 
