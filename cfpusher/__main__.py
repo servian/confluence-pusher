@@ -25,7 +25,7 @@ OVERWRITE = False
 @click.option('--space', required=True, type=str)
 @click.option('--parent-page', required=True, type=str)
 @click.option('--root-page', required=True, type=str)
-@click.option('--overwrite', is_flag=True, required=True)
+@click.option('--overwrite', is_flag=True)
 def main(source_folder, oauth_token, root_page, space, parent_page, url, user_id, overwrite=False):
 
     global SOURCE_FOLDER, ROOT_PAGE_NAME, PARENT_PAGE_NAME, OVERWRITE, SPACE
