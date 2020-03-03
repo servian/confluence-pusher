@@ -19,7 +19,7 @@ setup(
     license='MIT',
     description="A tool to convert and upload markdown documents into Atlassian Confluence",
     long_description=long_description,
-    longs_description_content_type="text/markdown",
+    long_description_content_type="text/markdown",
     packages=find_packages(),
     package_data={
         "cfpusher": ["confluence.lua"],
