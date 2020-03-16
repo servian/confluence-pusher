@@ -76,7 +76,7 @@ def pandoc_conversion(file_name):
     file_contents = re.sub(r"{%.*?%}","",file_contents,flags=re.DOTALL)
     file_contents = re.sub(r"<!--.*?-->","",file_contents,flags=re.DOTALL)
     file_contents = file_contents.encode('UTF-8')
-    PANDOC_COMMAND = ['pandoc', '-t', LUA]
+    PANDOC_COMMAND = ['pandoc', '-f', 'markdown', '-t', LUA]
     pandoc = subprocess.Popen(PANDOC_COMMAND, stdout=PIPE, stdin=PIPE, stderr=STDOUT)
     confluence_content = pandoc.communicate(input=file_contents)
     return(confluence_content[0].decode('UTF-8'))
