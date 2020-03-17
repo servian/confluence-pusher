@@ -112,6 +112,7 @@ def update_content(path,page_id,title):
     # REMOVE RANDOM TAG
     macro_regex = r"(<ac:structured-macro.*?</ac:plain-text-body></ac:structured-macro>)"
     content = re.sub(macro_regex, "", content)
+    content = content.replace(r"</br>",r"\\")
 
     CONF.update_page(page_id, title, content)
 

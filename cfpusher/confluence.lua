@@ -336,11 +336,11 @@ function Table(caption, aligns, widths, headers, rows)
   if empty_header then
     head = ""
   else
-    add("<th>")
+    add("<tr>")
     for _, h in pairs(header_row) do
       add(h)
     end
-    add("</th>")
+    add("</tr>")
   end
   local class = "even"
   for _, row in pairs(rows) do
