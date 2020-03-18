@@ -114,7 +114,8 @@ def update_content(path,page_id,title):
     content = re.sub(macro_regex, "", content)
     content = content.replace(r"</br>",r"<br>")
 
-    CONF.update_page(page_id, title, content)
+    result = CONF.update_page(page_id, title, content)
+    print(result['message'])
 
 def resize_svg(path,w_constrain,h_constrain):
 
